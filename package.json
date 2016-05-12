@@ -29,6 +29,7 @@
     "async": "1.5.x"
   },
   "devDependencies": {
+    "coveralls": "2.11.x",
     "jshint": "2.9.x",
     "hapi": "13.4.x",
     "jscs": "3.0.x",
