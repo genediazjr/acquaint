@@ -14,3 +14,5 @@ node_modules/*
 # dropbox
 Icon?
 .dropbox
+
+coverage.html

@@ -1,8 +1,9 @@
 # acquaint
 Hapi plugin to load routes, handlers, and methods through [globs] (https://github.com/isaacs/node-glob).
+All glob [rules] (https://github.com/isaacs/node-glob/blob/master/README.md) apply. 
 
-[![Build Status](https://travis-ci.org/genediazjr/acquaint.svg)](https://travis-ci.org/genediazjr/acquaint)
-[![Coverage Status](https://coveralls.io/repos/genediazjr/acquaint/badge.svg)](https://coveralls.io/r/genediazjr/acquaint)
+[![Build Status](https://travis-ci.org/genediazjr/acquaint.svg?branch=master)](https://travis-ci.org/genediazjr/acquaint)
+[![Coverage Status](https://coveralls.io/repos/github/genediazjr/acquaint/badge.svg?branch=master)](https://coveralls.io/github/genediazjr/acquaint?branch=master)
 [![Code Climate](https://codeclimate.com/github/genediazjr/acquaint/badges/gpa.svg)](https://codeclimate.com/github/genediazjr/acquaint)
 
 ## Usage
@@ -55,9 +56,13 @@ registrations: [
 ```
 
 ## Options
-* **relativeTo** - `string` of the current working directory in which to search. Defaults to `process.cwd()`.
-* **routes**, **handlers**, and **methods** - `array` of [inject objects] (#inject-object) or glob `string` pattern/s to be included.
- 
+* **relativeTo** 
+  * `String` of the current working directory in which to search. Defaults to `process.cwd()`.
+* **routes**, **handlers**, and **methods** 
+  * Can be a `string` glob pattern, an `array` of `string` glob patterns, or an `array` of [inject objects] (#inject-object) to be included.
+  * You may specify only routes if you only want to autoload routes. The same for handlers and methods.
+  * Returns an `error` if no files are retrieved on the specified [glob] (https://github.com/isaacs/node-glob) pattern.
+
 #### Inject Object
 * **includes** `string`/`array` - glob file pattern/s to be injected
 * **ignores** `string`/`array` - glob file pattern/s to be ignored
@@ -65,7 +70,7 @@ registrations: [
 
 ## Examples
 
-#### route
+#### Route
 ```js
 module.exports = [
     {
@@ -79,7 +84,7 @@ module.exports = [
 ];
 ```
 
-#### handler
+#### Handler
 ```js
 module.exports = (route, options) => {
 
@@ -90,7 +95,7 @@ module.exports = (route, options) => {
 };
 ```
 
-Use on route
+Handler use on route
 ```js
 module.exports = [
     {
@@ -105,7 +110,7 @@ module.exports = [
 ];
 ```
 
-#### method
+#### Method
 ```js
 module.export.createOrUpdate = (user, next) => {
     ...
@@ -113,14 +118,14 @@ module.export.createOrUpdate = (user, next) => {
 };
 ```
 
-Use on server
+Method use on server
 ```js
 server.methods.methodPrefix.FileName.exportedFunction(user, (err, data) => {
     ...
 });
 ```
 
-Use on handler
+Method use on handler
 ```js
 module.exports = (route, options) => {
 
@@ -134,7 +139,7 @@ module.exports = (route, options) => {
 };
 ```
 
-Use on other method
+Method use on other method
 ```js
 const context = require('acquaint');
 
@@ -148,6 +153,7 @@ module.export.createOrUpdate = (user, next) => {
 ## Contributing
 * Include 100% test coverage
 * Follow the [Hapi coding conventions] (http://hapijs.com/styleguide)
+* Submit an issue first for significat changes.
 
 ## Credits 
 * [hapi-router] (https://github.com/bsiddiqui/hapi-router) - Auto route loading for Hapi

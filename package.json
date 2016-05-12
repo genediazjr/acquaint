@@ -21,15 +21,12 @@
     "node": ">=4.0.0"
   },
   "scripts": {
-    "test": "jscs ./ && jshint ./ && lab -c -v -L",
-    "test-cov-html": "lab -r html -o coverage.html -a code -L"
+    "test": "jscs ./ && jshint ./ && lab -c -v -L -a code -t 100",
+    "test-cover": "lab -c -v -L -a code -t 100 -r html -o ./coverage.html -L && open ./coverage.html"
   },
   "dependencies": {
     "glob": "7.0.x",
-    "async": "1.5.x",
-    "lodash": "4.12.x",
-    "hoek": "4.0.x",
-    "joi": "8.1.x"
+    "async": "1.5.x"
   },
   "devDependencies": {
     "jshint": "2.9.x",
