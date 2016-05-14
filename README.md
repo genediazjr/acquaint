@@ -3,6 +3,7 @@ Hapi plugin to load routes, handlers, and methods through [globs] (https://githu
 All glob [rules] (https://github.com/isaacs/node-glob/blob/master/README.md) apply. 
 
 [![npm version](https://badge.fury.io/js/acquaint.svg)](https://badge.fury.io/js/acquaint)
+[![Dependency Status](https://david-dm.org/genediazjr/acquaint.svg)](https://david-dm.org/genediazjr/acquaint)
 [![Build Status](https://travis-ci.org/genediazjr/acquaint.svg?branch=master)](https://travis-ci.org/genediazjr/acquaint)
 [![Coverage Status](https://coveralls.io/repos/github/genediazjr/acquaint/badge.svg?branch=master)](https://coveralls.io/github/genediazjr/acquaint?branch=master)
 [![Code Climate](https://codeclimate.com/github/genediazjr/acquaint/badges/gpa.svg)](https://codeclimate.com/github/genediazjr/acquaint)
