@@ -422,6 +422,76 @@ describe('registration and functionality', () => {
         });
     });
 
+    it('has usable function exporting methods', (done) => {
+
+        register({
+            methods: [
+                'test/methods/subdir/*5Method.js'
+            ]
+        }, (err) => {
+
+            expect(err).to.not.exist();
+            expect(server.methods.sample5Method(5, 3), 'subtract').to.equal(2);
+
+            return done();
+        });
+    });
+
+    it('has usable method and options exporting methods', (done) => {
+
+        register({
+            methods: [
+                'test/methods/subdir/*6Method.js'
+            ]
+        }, (err) => {
+
+            expect(err).to.not.exist();
+            server.methods.sample6Method(9, (subErr, data) => {
+
+                expect(data).to.equal(18);
+                return done();
+            });
+        });
+    });
+
+    it('has usable function exporting methods with prefix', (done) => {
+
+        register({
+            methods: [
+                {
+                    prefix: 'major',
+                    includes: 'test/methods/subdir/*5Method.js'
+                }
+            ]
+        }, (err) => {
+
+            expect(err).to.not.exist();
+            expect(server.methods.major.sample5Method(5, 3), 'subtract').to.equal(2);
+
+            return done();
+        });
+    });
+
+    it('has usable method and options exporting methods with prefix', (done) => {
+
+        register({
+            methods: [
+                {
+                    prefix: 'minor',
+                    includes: 'test/methods/subdir/*6Method.js'
+                }
+            ]
+        }, (err) => {
+
+            expect(err).to.not.exist();
+            server.methods.minor.sample6Method(8, (subErr, data) => {
+
+                expect(data).to.equal(16);
+                return done();
+            });
+        });
+    });
+
     it('will not load malformed methods', (done) => {
 
         register({

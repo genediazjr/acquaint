@@ -114,9 +114,18 @@ module.exports = [
 
 #### Method
 ```js
-module.export.createOrUpdate = (user, next) => {
+export.createOrUpdate = (user, next) => {
     ...
     return next(err, userFromDb);
+};
+
+export.obtainOrDelete = {
+    method: (user, next) => {
+        ....
+    },
+    options: {
+        ...
+    }
 };
 ```
 
@@ -150,6 +159,26 @@ module.export.createOrUpdate = (user, next) => {
     ...
     return next(err, userFromDb);
 };
+```
+
+You may also inject a method that exports a function
+```js
+module.export = (user, next) => {
+    ...
+    return next(err, userFromDb);
+}; 
+```
+
+Or a method with ***method*** and ***options*** keys
+```js
+module.export = {
+    method: (user, next) => {
+        ....
+    },
+    options: {
+        ...
+    }
+}; 
 ```
 
 ## Contributing
