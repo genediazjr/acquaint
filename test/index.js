@@ -350,7 +350,7 @@ describe('registration and functionality', () => {
         });
     });
 
-    it('has usable methods on methdos', (done) => {
+    it('has usable methods on other methods', (done) => {
 
         register({
             methods: [
@@ -391,6 +391,32 @@ describe('registration and functionality', () => {
             expect(server.methods.sub.sample2Method.add(7, 8), 'add').to.equal(15);
             expect(server.methods.sub.sample2Method.multiply(2, 3), 'multiply').to.equal(6);
             expect(server.methods.sub.sample3Method.useAdd(1, 2), 'useAdd').to.equal(3);
+
+            return done();
+        });
+    });
+
+    it('has usable methods on other methods with prefix', (done) => {
+
+        register({
+            methods: [
+                {
+                    prefix: 'main',
+                    includes: 'test/methods/subdir/*2Method.js'
+                },
+                {
+                    prefix: 'sub',
+                    includes: 'test/methods/subdir/*4Method.js'
+                }
+            ]
+        }, (err) => {
+
+            expect(err).to.not.exist();
+
+            const testValueX = 5;
+            const testValueY = 3;
+
+            expect(server.methods.main.sample2Method.add(testValueX, testValueY)).to.be.equal(server.methods.sub.sample4Method.useAdd(testValueX, testValueY));
 
             return done();
         });
