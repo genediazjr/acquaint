@@ -1,6 +1,6 @@
 {
   "name": "acquaint",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "author": "Gene Diaz <genediazjr@gmail.com> (http://genediazjr.com/)",
   "description": "Routes, Handlers, and Methods Autoloader",
   "keywords": [
@@ -25,6 +25,7 @@
     "test-cover": "lab -c -v -L -a code -t 100 -r html -o ./coverage.html -L && open ./coverage.html"
   },
   "dependencies": {
+    "joi": "8.1.x",
     "glob": "7.0.x",
     "async": "1.5.x"
   },

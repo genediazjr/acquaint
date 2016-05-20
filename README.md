@@ -2,6 +2,8 @@
 Hapi plugin to load routes, handlers, and methods through [globs] (https://github.com/isaacs/node-glob).
 All glob [rules] (https://github.com/isaacs/node-glob/blob/master/README.md) apply. 
 
+Also accepts direct injection of route objects, handler functions, and method functions which is useful for testing. 
+
 [![npm version](https://badge.fury.io/js/acquaint.svg)](https://badge.fury.io/js/acquaint)
 [![Dependency Status](https://david-dm.org/genediazjr/acquaint.svg)](https://david-dm.org/genediazjr/acquaint)
 [![Build Status](https://travis-ci.org/genediazjr/acquaint.svg?branch=master)](https://travis-ci.org/genediazjr/acquaint)
@@ -16,13 +18,20 @@ server.register({
     options: {
         relativeTo: __dirname, 
         routes: [
-          'path/to/user/**/*Routes.js',
-          'path/to/sample/**/*Routes.js'
+            {
+                includes: [
+                    'path/to/user/**/*Routes.js'
+                ]
+            }
         ],
         handlers: [
             {
-                includes: 'path/to/**/*Handlers.js',
-                ignores: 'TestHandler.js'
+                includes: [
+                    'path/to/**/*Handlers.js'
+                ],
+                ignores: [
+                    'TestHandler.js'
+                ]
             }
         ],
         methods: [
@@ -35,7 +44,9 @@ server.register({
             },
             {
                 prefix: 'util',
-                includes: 'path/to/**/*Utils.js'
+                includes: [
+                    'path/to/**/*Utils.js'
+                ]
             }
         ]
     }
@@ -61,18 +72,151 @@ registrations: [
 * **relativeTo** 
   * `String` of the current working directory in which to search. Defaults to `process.cwd()`.
 * **routes**, **handlers**, and **methods** 
-  * Can be a `string` glob pattern, an `array` of `string` glob patterns, or an `array` of [inject objects] (#inject-object) to be included.
+  * `array` of [inject objects] (#inject-object) to be included.
   * You may specify only routes if you only want to autoload routes. The same for handlers and methods.
   * Returns an `error` if no files are retrieved on the specified [glob] (https://github.com/isaacs/node-glob) pattern.
 
 #### Inject Object
-* **includes** `string`/`array` - glob file pattern/s to be injected
-* **ignores** `string`/`array` - glob file pattern/s to be ignored
-* **prefix** `string` - method usage prefix. only for methods.
+* **includes** - `array` of glob `string` pattern/s or the `route`, `handler`, or `method` itself. Required.
+* **ignores** - `array` of glob `string` pattern/s to be excluded while matching. Optional.
+* **prefix** - `string` prefix for methods. Methods use only. Optional.
 
-## Examples
+## Option Examples
 
-#### Route
+#### Route Example
+
+glob string
+```js
+options: {
+    routes: [
+        {
+            includes: [
+                'path/to/user/**/*Routes.js'
+            ]
+        }
+    ]
+}
+```
+
+or the route itself
+```js
+options: {
+    routes: [
+        {
+            includes: [
+                {
+                    path: '/test1',
+                    method: 'get',
+                    handler: (request, reply) => {
+                        ...
+                        return reply('hello');
+                    }
+                },
+                'path/to/other/**/*Routes.js'
+            ]
+        }
+    ]
+}
+```
+
+#### Handler Example
+
+glob string
+```js
+options: {
+    handlers: [
+        {
+            includes: [
+                'path/to/user/**/*Handlers.js'
+            ]
+        }
+    ]
+}
+```
+
+or the handler itself (Function name is required. Don't use arrow functions.)
+```js
+options: {
+    handlers: [
+        {
+            includes: [
+                function handlerName (route, options) {
+                
+                    return (request, reply) => {
+                        ...
+                        return reply('hello');
+                    };
+                },
+                'path/to/other/**/*Handlers.js'
+            ]
+        }
+    ]
+}
+```
+
+#### Method Example
+
+glob string
+```js
+options: {
+    methods: [
+        {
+            prefix: 'model',
+            includes: [
+                'path/to/model/**/*Methods.js'
+            ]
+        }
+    ]
+}
+```
+
+or the method itself (Function name is required. Don't use arrow functions.)
+```js
+options: {
+    routes: [
+        {
+            prefix: 'model',
+            includes: [
+                function methodName (x, y) {
+                    ...
+                    return x + y + z;
+                },
+                'path/to/other/**/*Methods.js'
+            ]
+        }
+    ]
+}
+```
+
+or a method with options (Function name is required. Don't use arrow functions.)
+```js
+options: {
+    routes: [
+        {
+            prefix: 'model',
+            includes: [
+                {
+                    options: {
+                        cache: {
+                            expiresIn: 60000,
+                            generateTimeout: 60000
+                        }
+                    },
+                    method: function methodName(x, y) {
+                        ...
+                        return x + y + z;
+                    }
+                },
+                'path/to/other/**/*Methods.js'
+            ]
+        }
+    ]
+}
+```
+
+## File Examples
+
+#### Route File
 ```js
 module.exports = [
     {
@@ -86,7 +230,7 @@ module.exports = [
 ];
 ```
 
-#### Handler
+#### Handler File
 ```js
 module.exports = (route, options) => {
 
@@ -112,7 +256,7 @@ module.exports = [
 ];
 ```
 
-#### Method
+#### Method File
 ```js
 export.createOrUpdate = (user, next) => {
     ...
@@ -131,9 +275,9 @@ export.obtainOrDelete = {
 
 Method use on server
 ```js
-server.methods.methodPrefix.FileName.exportedFunction(user, (err, data) => {
-    ...
-});
+    server.methods.methodPrefix.FileName.exportedFunction(user, (err, data) => {
+        ...
+    });
 ```
 
 Method use on handler
