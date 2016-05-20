@@ -328,7 +328,7 @@ module.export = {
 ## Contributing
 * Include 100% test coverage
 * Follow the [Hapi coding conventions] (http://hapijs.com/styleguide)
-* Submit an issue first for significat changes.
+* Submit an issue first for significant changes.
 
 ## Credits 
 * [hapi-router] (https://github.com/bsiddiqui/hapi-router) - Auto route loading for Hapi
