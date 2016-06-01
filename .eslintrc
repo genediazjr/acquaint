@@ -165,7 +165,7 @@
       "never"
     ],
     "strict": [
-      "error",
+      2,
       "global"
     ]
   },
