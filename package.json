@@ -25,7 +25,7 @@
     "test-cover": "lab -v -L -a code -t 100 -r html -o ./coverage.html -L && open ./coverage.html"
   },
   "dependencies": {
-    "joi": "8.1.x",
+    "joi": "8.4.x",
     "glob": "7.0.x",
     "async": "1.5.x"
   },
