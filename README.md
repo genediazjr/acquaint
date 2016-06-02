@@ -214,9 +214,9 @@ options: {
 }
 ```
 
-## File Examples
+## File Signatures
 
-#### Route File
+#### Route Signature
 ```js
 module.exports = [
     {
@@ -230,7 +230,7 @@ module.exports = [
 ];
 ```
 
-#### Handler File
+#### Handler Signature
 ```js
 module.exports = (route, options) => {
 
@@ -256,7 +256,7 @@ module.exports = [
 ];
 ```
 
-#### Method File
+#### Method Signature
 ```js
 export.createOrUpdate = (user, next) => {
     ...
