@@ -29,6 +29,26 @@ exports.increment = {
 };
 
 
+exports.divide = {
+    options: {
+        cache: {
+            expiresIn: 60000,
+            generateTimeout: 60000
+        },
+        bind: {
+            divide: (a, b) => {
+
+                return a / b;
+            }
+        }
+    },
+    method: function (a, b, next) {
+
+        return next(null, this.divide(a, b));
+    }
+};
+
+
 exports.thisWillBeNotRegistered = {
     options: {
         cache: {

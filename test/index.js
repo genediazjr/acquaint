@@ -352,18 +352,34 @@ describe('registration and functionality', () => {
             ]
         }, (err) => {
 
+            server.initialize();
+
             expect(err).to.not.exist();
             expect(server.methods.sample1Method.square(5), 'square').to.equal(25);
             expect(server.methods.sample1Method.isEven(4), 'isEven').to.equal(true);
             expect(server.methods.sample1Method.isEven(3), 'isEven').to.equal(false);
 
+            server.methods.sample1Method.divide(4, 2, (divideErr, data) => {
+
+                expect(divideErr).to.not.exist();
+                expect(data, 'divide').to.equal(2);
+            });
+
             server.methods.sample1Method.increment((incErr, data) => {
 
                 expect(incErr).to.not.exist();
                 expect(data, 'increment').to.equal(1);
-
-                return done();
             });
+
+            setTimeout(() => {
+                server.methods.sample1Method.increment((incErr, data) => {
+
+                    expect(incErr).to.not.exist();
+                    expect(data, 'increment').to.equal(1);
+
+                    return done();
+                });
+            }, 1000);
         });
     });
 
@@ -395,24 +411,59 @@ describe('registration and functionality', () => {
 
                                 return next(null, ++counter);
                             }
+                        },
+                        {
+                            options: {
+                                cache: {
+                                    expiresIn: 60000,
+                                    generateTimeout: 60000
+                                },
+                                bind: {
+                                    divide: (a, b) => {
+
+                                        return a / b;
+                                    }
+                                }
+                            },
+                            method: function divide(a, b, next) {
+
+                                return next(null, this.divide(a, b));
+                            }
                         }
                     ]
                 }
             ]
         }, (err) => {
 
+            server.initialize();
+
             expect(err).to.not.exist();
             expect(server.methods.sample1Method.square(5), 'square').to.equal(25);
             expect(server.methods.sample1Method.isEven(4), 'isEven').to.equal(true);
             expect(server.methods.sample1Method.isEven(3), 'isEven').to.equal(false);
 
+            server.methods.sample1Method.divide(4, 2, (divideErr, data) => {
+
+                expect(divideErr).to.not.exist();
+                expect(data, 'divide').to.equal(2);
+            });
+
             server.methods.sample1Method.increment((incErr, data) => {
 
                 expect(incErr).to.not.exist();
                 expect(data, 'increment').to.equal(1);
-
-                return done();
             });
+
+            setTimeout(() => {
+
+                server.methods.sample1Method.increment((incErr, data) => {
+
+                    expect(incErr).to.not.exist();
+                    expect(data, 'increment').to.equal(1);
+
+                    return done();
+                });
+            }, 1000);
         });
     });
 
