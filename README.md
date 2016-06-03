@@ -1,6 +1,6 @@
 # acquaint
-Hapi plugin to load `routes`, `handlers`, and `methods` through [globs] (https://github.com/isaacs/node-glob).
-All glob [rules] (https://github.com/isaacs/node-glob/blob/master/README.md) apply. 
+Hapi plugin to load `routes`, `handlers`, and `methods` through [globs](https://github.com/isaacs/node-glob).
+All glob [rules](https://github.com/isaacs/node-glob/blob/master/README.md) apply. 
 
 * Supports glob patterns for injecting.
 * Supports direct injection through plugin register options.
@@ -56,7 +56,7 @@ server.register({
     ...
 });
 ```
-[Glue] (https://github.com/hapijs/glue) manifest
+[Glue](https://github.com/hapijs/glue) manifest
 ```js
 registrations: [
     {
@@ -74,9 +74,9 @@ registrations: [
 * **relativeTo** 
   * `String` of the current working directory in which to search. Defaults to `process.cwd()`.
 * **routes**, **handlers**, and **methods** 
-  * `array` of [inject objects] (#inject-object) to be included.
+  * `array` of [inject objects](#inject-object) to be included.
   * You may specify only routes if you only want to autoload routes. The same for handlers and methods.
-  * Returns an `error` if no files are retrieved on the specified [glob] (https://github.com/isaacs/node-glob) pattern.
+  * Returns an `error` if no files are retrieved on the specified [glob](https://github.com/isaacs/node-glob) pattern.
 
 #### Inject Object
 * **includes** - `array` of glob `string` pattern/s or the `route`, `handler`, or `method` itself. Required.
@@ -353,10 +353,10 @@ module.export = {
 
 ## Contributing
 * Include 100% test coverage
-* Follow the [Hapi coding conventions] (http://hapijs.com/styleguide)
+* Follow the [Hapi coding conventions](http://hapijs.com/styleguide)
 * Submit an issue first for significant changes.
 
 ## Credits 
-* [hapi-router] (https://github.com/bsiddiqui/hapi-router) - Auto route loading for Hapi
-* [hapi-handlers] (https://github.com/ar4mirez/hapi-handlers) - Autoload handlers for Hapi
-* [hapi-methods-injection] (https://github.com/amgohan/hapi-methods-injection) - Scan and register automatically your hapi methods
+* [hapi-router](https://github.com/bsiddiqui/hapi-router) - Auto route loading for Hapi
+* [hapi-handlers](https://github.com/ar4mirez/hapi-handlers) - Autoload handlers for Hapi
+* [hapi-methods-injection](https://github.com/amgohan/hapi-methods-injection) - Scan and register automatically your hapi methods
