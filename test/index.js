@@ -60,6 +60,7 @@ describe('registration and functionality', () => {
         }, (err) => {
 
             expect(err).to.not.exist();
+
             expect(server.connections[0].table()).to.have.length(2);
 
             return done();
@@ -84,6 +85,7 @@ describe('registration and functionality', () => {
         }, (err) => {
 
             expect(err).to.not.exist();
+
             expect(server.connections[0].table()).to.have.length(2);
 
             return done();
@@ -355,6 +357,7 @@ describe('registration and functionality', () => {
             server.initialize();
 
             expect(err).to.not.exist();
+
             expect(server.methods.sample1Method.square(5), 'square').to.equal(25);
             expect(server.methods.sample1Method.isEven(4), 'isEven').to.equal(true);
             expect(server.methods.sample1Method.isEven(3), 'isEven').to.equal(false);
@@ -372,6 +375,7 @@ describe('registration and functionality', () => {
             });
 
             setTimeout(() => {
+
                 server.methods.sample1Method.increment((incErr, data) => {
 
                     expect(incErr).to.not.exist();
@@ -438,6 +442,7 @@ describe('registration and functionality', () => {
             server.initialize();
 
             expect(err).to.not.exist();
+
             expect(server.methods.sample1Method.square(5), 'square').to.equal(25);
             expect(server.methods.sample1Method.isEven(4), 'isEven').to.equal(true);
             expect(server.methods.sample1Method.isEven(3), 'isEven').to.equal(false);
@@ -734,6 +739,7 @@ describe('registration and functionality', () => {
         }, (err) => {
 
             expect(err).to.not.exist();
+
             expect(server.methods.main.sample1Method.square(5), 'square').to.equal(25);
             expect(server.methods.main.sample1Method.isEven(4), 'isEven').to.equal(true);
             expect(server.methods.main.sample1Method.isEven(3), 'isEven').to.equal(false);
@@ -788,6 +794,7 @@ describe('registration and functionality', () => {
         }, (err) => {
 
             expect(err).to.not.exist();
+
             expect(server.methods.sample5Method(5, 3), 'subtract').to.equal(2);
 
             return done();
@@ -807,9 +814,11 @@ describe('registration and functionality', () => {
         }, (err) => {
 
             expect(err).to.not.exist();
+
             server.methods.sample6Method(9, (subErr, data) => {
 
                 expect(data).to.equal(18);
+
                 return done();
             });
         });
@@ -839,9 +848,11 @@ describe('registration and functionality', () => {
         }, (err) => {
 
             expect(err).to.not.exist();
+
             server.methods.sample6Method(9, (subErr, data) => {
 
                 expect(data).to.equal(18);
+
                 return done();
             });
         });
@@ -861,6 +872,7 @@ describe('registration and functionality', () => {
         }, (err) => {
 
             expect(err).to.not.exist();
+
             expect(server.methods.major.sample5Method(5, 3), 'subtract').to.equal(2);
 
             return done();
@@ -884,6 +896,7 @@ describe('registration and functionality', () => {
         }, (err) => {
 
             expect(err).to.not.exist();
+
             expect(server.methods.major.sample5Method(5, 3), 'subtract').to.equal(2);
 
             return done();
@@ -904,9 +917,11 @@ describe('registration and functionality', () => {
         }, (err) => {
 
             expect(err).to.not.exist();
+
             server.methods.minor.sample6Method(8, (subErr, data) => {
 
                 expect(data).to.equal(16);
+
                 return done();
             });
         });
@@ -937,9 +952,11 @@ describe('registration and functionality', () => {
         }, (err) => {
 
             expect(err).to.not.exist();
+
             server.methods.minor.sample6Method(8, (subErr, data) => {
 
                 expect(data).to.equal(16);
+
                 return done();
             });
         });
@@ -974,6 +991,7 @@ describe('registration and functionality', () => {
             });
 
             setTimeout(() => {
+
                 server.methods.sample7Method((decreErr, data) => {
 
                     expect(decreErr).to.not.exist();
@@ -1022,6 +1040,7 @@ describe('registration and functionality', () => {
             server.initialize();
 
             expect(err).to.not.exist();
+
             server.methods.cached.sample7Method((decreErr, data) => {
 
                 expect(decreErr).to.not.exist();
@@ -1035,6 +1054,7 @@ describe('registration and functionality', () => {
             });
 
             setTimeout(() => {
+
                 server.methods.cached.sample7Method((cachedEecreErr, cachedData) => {
 
                     expect(cachedEecreErr).to.not.exist();
@@ -1161,6 +1181,7 @@ describe('registration and functionality', () => {
         }, (err) => {
 
             expect(err).to.not.exist();
+
             expect(server.methods.sample1Method.square).to.exist();
             expect(server.methods.sample1Method.thisWillBeNotRegistered).to.not.exist();
 
