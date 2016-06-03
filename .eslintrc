@@ -95,7 +95,6 @@
     "no-regex-spaces": 2,
     "no-class-assign": 2,
     "no-const-assign": 2,
-    "no-invalid-this": 2,
     "no-implied-eval": 2,
     "no-useless-call": 2,
     "no-octal-escape": 2,
