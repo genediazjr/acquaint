@@ -945,6 +945,209 @@ describe('registration and functionality', () => {
         });
     });
 
+    it('uses default method options with cache on loaded methods', (done) => {
+
+        register({
+            methods: [
+                {
+                    includes: [
+                        'test/methods/subdir/*7Method.js'
+                    ],
+                    options: {
+                        cache: {
+                            expiresIn: 60000,
+                            generateTimeout: 100
+                        }
+                    }
+                }
+            ]
+        }, (err) => {
+
+            server.initialize();
+
+            expect(err).to.not.exist();
+
+            server.methods.sample7Method((decreErr, data) => {
+
+                expect(decreErr).to.not.exist();
+                expect(data).to.equal(-1);
+            });
+
+            setTimeout(() => {
+                server.methods.sample7Method((decreErr, data) => {
+
+                    expect(decreErr).to.not.exist();
+                    expect(data).to.equal(-1);
+
+                    return done();
+                });
+            }, 1000);
+        });
+    });
+
+    it('uses default method options with cache on directly injected methods', (done) => {
+
+        let cachedCounter = 0;
+        let nonCachedCounter = 0;
+
+        register({
+            methods: [
+                {
+                    prefix: 'cached',
+                    includes: [
+                        function sample7Method(next) {
+
+                            return next(null, --cachedCounter);
+                        }
+                    ],
+                    options: {
+                        cache: {
+                            expiresIn: 60000,
+                            generateTimeout: 100
+                        }
+                    }
+                },
+                {
+                    prefix: 'noncached',
+                    includes: [
+                        function sample7Method(next) {
+
+                            return next(null, --nonCachedCounter);
+                        }
+                    ]
+                }
+            ]
+        }, (err) => {
+
+            server.initialize();
+
+            expect(err).to.not.exist();
+            server.methods.cached.sample7Method((decreErr, data) => {
+
+                expect(decreErr).to.not.exist();
+                expect(data).to.equal(-1);
+            });
+
+            server.methods.noncached.sample7Method((decreErr, data) => {
+
+                expect(decreErr).to.not.exist();
+                expect(data).to.equal(-1);
+            });
+
+            setTimeout(() => {
+                server.methods.cached.sample7Method((cachedEecreErr, cachedData) => {
+
+                    expect(cachedEecreErr).to.not.exist();
+                    expect(cachedData).to.equal(-1);
+
+                    server.methods.noncached.sample7Method((nonCachedEecreErr, nonCachedData) => {
+
+                        expect(nonCachedEecreErr).to.not.exist();
+                        expect(nonCachedData).to.equal(-2);
+
+                        return done();
+                    });
+                });
+            }, 1000);
+        });
+    });
+
+    it('uses default method options with bind on loaded methods', (done) => {
+
+        register({
+            methods: [
+                {
+                    prefix: 'nobind',
+                    includes: [
+                        'test/methods/subdir/*8Method.js'
+                    ]
+                },
+                {
+                    prefix: 'withbind',
+                    includes: [
+                        'test/methods/subdir/*8Method.js'
+                    ],
+                    options: {
+                        bind: {
+                            operation: function (a) {
+
+                                return a + 'test';
+                            }
+                        }
+                    }
+                }
+            ]
+        }, (err) => {
+
+            expect(err).to.not.exist();
+
+            expect(server.methods.nobind.sample8Method(5)).to.equal(5);
+            expect(server.methods.withbind.sample8Method(5)).to.equal('5test');
+
+            return done();
+        });
+    });
+
+    it('uses default method options with bind on directly injected methods', (done) => {
+
+        register({
+            methods: [
+                {
+                    prefix: 'nobind',
+                    includes: [
+                        function sample8Method(x) {
+
+                            let operation = (a) => {
+
+                                return a;
+                            };
+
+                            if (this && typeof this.operation === 'function') {
+                                operation = this.operation;
+                            }
+
+                            return operation(x);
+                        }
+                    ]
+                },
+                {
+                    prefix: 'withbind',
+                    includes: [
+                        function sample8Method(x) {
+
+                            let operation = (a) => {
+
+                                return a;
+                            };
+
+                            if (this && typeof this.operation === 'function') {
+                                operation = this.operation;
+                            }
+
+                            return operation(x);
+                        }
+                    ],
+                    options: {
+                        bind: {
+                            operation: function (a) {
+
+                                return a + 'test';
+                            }
+                        }
+                    }
+                }
+            ]
+        }, (err) => {
+
+            expect(err).to.not.exist();
+
+            expect(server.methods.nobind.sample8Method(5)).to.equal(5);
+            expect(server.methods.withbind.sample8Method(5)).to.equal('5test');
+
+            return done();
+        });
+    });
+
     it('will not load malformed methods', (done) => {
 
         register({

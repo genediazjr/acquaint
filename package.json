@@ -1,6 +1,6 @@
 {
   "name": "acquaint",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "author": "Gene Diaz <genediazjr@gmail.com> (http://genediazjr.com/)",
   "description": "Routes, Handlers, and Methods Autoloader",
   "keywords": [

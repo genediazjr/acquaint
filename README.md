@@ -1,8 +1,10 @@
 # acquaint
-Hapi plugin to load routes, handlers, and methods through [globs] (https://github.com/isaacs/node-glob).
+Hapi plugin to load `routes`, `handlers`, and `methods` through [globs] (https://github.com/isaacs/node-glob).
 All glob [rules] (https://github.com/isaacs/node-glob/blob/master/README.md) apply. 
 
-Also accepts direct injection of route objects, handler functions, and method functions which is useful for testing. 
+* Supports glob patterns for injecting.
+* Supports direct injection through plugin register options.
+* Supports default options such as `cache` and `bind` on loaded `methods`.
 
 [![npm version](https://badge.fury.io/js/acquaint.svg)](https://badge.fury.io/js/acquaint)
 [![Dependency Status](https://david-dm.org/genediazjr/acquaint.svg)](https://david-dm.org/genediazjr/acquaint)
@@ -80,6 +82,7 @@ registrations: [
 * **includes** - `array` of glob `string` pattern/s or the `route`, `handler`, or `method` itself. Required.
 * **ignores** - `array` of glob `string` pattern/s to be excluded while matching. Optional.
 * **prefix** - `string` prefix for methods. Methods use only. Optional.
+* **options** - `object` configuration as default options for loaded methods. Methods use only. Optional.
 
 ## Option Examples
 
@@ -141,7 +144,7 @@ options: {
         {
             includes: [
                 function handlerName (route, options) {
-                
+
                     return (request, reply) => {
                         ...
                         return reply('hello');
@@ -188,7 +191,7 @@ options: {
 }
 ```
 
-or a method with options (Function name is required. Don't use arrow functions.)
+method with options (Function name is required. Don't use arrow functions.)
 ```js
 options: {
     routes: [
@@ -213,6 +216,29 @@ options: {
     ]
 }
 ```
+
+glob string with default method options (Overridden by file or direct options.)
+```js
+options: {
+    methods: [
+        {
+            prefix: 'model',
+            includes: [
+                'path/to/model/**/*Methods.js'
+            ],
+            options: {
+                cache: {
+                    expiresIn: 60000,
+                    generateTimeout: 60000
+                },
+                bind: someObject
+            }
+        }
+    ]
+}
+```
+
+See the [tests](https://github.com/genediazjr/acquaint/blob/master/test/index.js) for other examples.
 
 ## File Signatures
 
@@ -294,7 +320,7 @@ module.exports = (route, options) => {
 };
 ```
 
-Method use on other method
+Method use on other method (Options such as `cache` and `bind` are not available here)
 ```js
 const context = require('acquaint');
 
