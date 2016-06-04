@@ -362,15 +362,15 @@ describe('registration and functionality', () => {
             expect(server.methods.sample1Method.isEven(4), 'isEven').to.equal(true);
             expect(server.methods.sample1Method.isEven(3), 'isEven').to.equal(false);
 
-            server.methods.sample1Method.divide(4, 2, (divideErr, data) => {
+            server.methods.sample1Method.divide(4, 2, (err, data) => {
 
-                expect(divideErr).to.not.exist();
+                expect(err).to.not.exist();
                 expect(data, 'divide').to.equal(2);
             });
 
-            server.methods.sample1Method.increment((incErr, data) => {
+            server.methods.sample1Method.increment((err, data) => {
 
-                expect(incErr).to.not.exist();
+                expect(err).to.not.exist();
                 expect(data, 'increment').to.equal(1);
             });
 
@@ -447,23 +447,23 @@ describe('registration and functionality', () => {
             expect(server.methods.sample1Method.isEven(4), 'isEven').to.equal(true);
             expect(server.methods.sample1Method.isEven(3), 'isEven').to.equal(false);
 
-            server.methods.sample1Method.divide(4, 2, (divideErr, data) => {
+            server.methods.sample1Method.divide(4, 2, (err, data) => {
 
-                expect(divideErr).to.not.exist();
+                expect(err).to.not.exist();
                 expect(data, 'divide').to.equal(2);
             });
 
-            server.methods.sample1Method.increment((incErr, data) => {
+            server.methods.sample1Method.increment((err, data) => {
 
-                expect(incErr).to.not.exist();
+                expect(err).to.not.exist();
                 expect(data, 'increment').to.equal(1);
             });
 
             setTimeout(() => {
 
-                server.methods.sample1Method.increment((incErr, data) => {
+                server.methods.sample1Method.increment((err, data) => {
 
-                    expect(incErr).to.not.exist();
+                    expect(err).to.not.exist();
                     expect(data, 'increment').to.equal(1);
 
                     return done();
@@ -984,17 +984,17 @@ describe('registration and functionality', () => {
 
             expect(err).to.not.exist();
 
-            server.methods.sample7Method((decreErr, data) => {
+            server.methods.sample7Method((err, data) => {
 
-                expect(decreErr).to.not.exist();
+                expect(err).to.not.exist();
                 expect(data).to.equal(-1);
             });
 
             setTimeout(() => {
 
-                server.methods.sample7Method((decreErr, data) => {
+                server.methods.sample7Method((err, data) => {
 
-                    expect(decreErr).to.not.exist();
+                    expect(err).to.not.exist();
                     expect(data).to.equal(-1);
 
                     return done();
@@ -1041,15 +1041,15 @@ describe('registration and functionality', () => {
 
             expect(err).to.not.exist();
 
-            server.methods.cached.sample7Method((decreErr, data) => {
+            server.methods.cached.sample7Method((err, data) => {
 
-                expect(decreErr).to.not.exist();
+                expect(err).to.not.exist();
                 expect(data).to.equal(-1);
             });
 
-            server.methods.noncached.sample7Method((decreErr, data) => {
+            server.methods.noncached.sample7Method((err, data) => {
 
-                expect(decreErr).to.not.exist();
+                expect(err).to.not.exist();
                 expect(data).to.equal(-1);
             });
 
