@@ -815,16 +815,34 @@ describe('registration and functionality', () => {
 
             expect(err).to.not.exist();
 
-            server.methods.sample6Method(9, (subErr, data) => {
+            server.methods.sample6Method(9, (err, data) => {
 
-                expect(data).to.equal(18);
-
-                return done();
+                expect(err).to.not.exist();
+                expect(data).to.equal({
+                    addToSelf: 18,
+                    counter: 2
+                });
             });
+
+            setTimeout(() => {
+
+                server.methods.sample6Method(11, (err, data) => {
+
+                    expect(err).to.not.exist();
+                    expect(data).to.equal({
+                        addToSelf: 22,
+                        counter: 3
+                    });
+
+                    return done();
+                });
+            }, 1000);
         });
     });
 
     it('has usable method and options exporting methods using direct inject', (done) => {
+
+        let counter = 1;
 
         register({
             methods: [
@@ -839,7 +857,10 @@ describe('registration and functionality', () => {
                             },
                             method: function sample6Method(a, next) {
 
-                                return next(null, a + a);
+                                return next(null, {
+                                    addToSelf: a + a,
+                                    counter: ++counter
+                                });
                             }
                         }
                     ]
@@ -849,12 +870,28 @@ describe('registration and functionality', () => {
 
             expect(err).to.not.exist();
 
-            server.methods.sample6Method(9, (subErr, data) => {
+            server.methods.sample6Method(9, (err, data) => {
 
-                expect(data).to.equal(18);
-
-                return done();
+                expect(err).to.not.exist();
+                expect(data).to.equal({
+                    addToSelf: 18,
+                    counter: 2
+                });
             });
+
+            setTimeout(() => {
+
+                server.methods.sample6Method(11, (err, data) => {
+
+                    expect(err).to.not.exist();
+                    expect(data).to.equal({
+                        addToSelf: 22,
+                        counter: 3
+                    });
+
+                    return done();
+                });
+            }, 1000);
         });
     });
 
@@ -918,9 +955,13 @@ describe('registration and functionality', () => {
 
             expect(err).to.not.exist();
 
-            server.methods.minor.sample6Method(8, (subErr, data) => {
+            server.methods.minor.sample6Method(8, (err, data) => {
 
-                expect(data).to.equal(16);
+                expect(err).to.not.exist();
+                expect(data).to.equal({
+                    addToSelf: 16,
+                    counter: 4
+                });
 
                 return done();
             });
@@ -941,7 +982,7 @@ describe('registration and functionality', () => {
                                     generateTimeout: 60000
                                 }
                             },
-                            method: function sample6Method(a, next) {
+                            method: function sample6MethodX(a, next) {
 
                                 return next(null, a + a);
                             }
@@ -953,8 +994,9 @@ describe('registration and functionality', () => {
 
             expect(err).to.not.exist();
 
-            server.methods.minor.sample6Method(8, (subErr, data) => {
+            server.methods.minor.sample6MethodX(8, (err, data) => {
 
+                expect(err).to.not.exist();
                 expect(data).to.equal(16);
 
                 return done();

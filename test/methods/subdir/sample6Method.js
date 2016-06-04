@@ -1,5 +1,8 @@
 'use strict';
 
+let counter = 1;
+
+
 module.exports = {
     options: {
         cache: {
@@ -9,6 +12,9 @@ module.exports = {
     },
     method: (a, next) => {
 
-        return next(null, a + a);
+        return next(null, {
+            addToSelf: a + a,
+            counter: ++counter
+        });
     }
 };
