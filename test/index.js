@@ -1234,6 +1234,102 @@ describe('registration and functionality', () => {
         });
     });
 
+    it('is able to use method with options within other methods', (done) => {
+
+        register({
+            methods: [
+                {
+                    includes: [
+                        'test/methods/subdir/sample8Method.js'
+                    ],
+                    options: {
+                        bind: {
+                            operation: function (a) {
+
+                                return a + 'somevalue';
+                            }
+                        }
+                    }
+                },
+                {
+                    includes: [
+                        'test/methods/sample1Method.js',
+                        'test/methods/subdir/sample6Method.js',
+                        'test/methods/subdir/sample9Method.js'
+                    ]
+                }
+            ]
+        }, (err) => {
+
+            server.initialize();
+
+            expect(err).to.not.exist();
+
+            expect(server.methods.sample9Method.sample8Method('thats')).to.equal('thatssomevalue');
+
+            server.methods.sample9Method.sample6Method(1, (err, data) => {
+
+                expect(err).to.not.exist();
+                expect(data).to.equal({
+                    addToSelf: 2,
+                    counter: 5
+                });
+            });
+
+            server.methods.sample9Method.increment((err, data) => {
+
+                expect(err).to.not.exist();
+                expect(data).to.equal(2);
+            });
+
+            server.methods.sample9Method.decrement((err, data) => {
+
+                expect(err).to.not.exist();
+                expect(data).to.equal(-2);
+            });
+
+            setTimeout(() => {
+
+                Async.series([
+                    (doneTest) => {
+                        server.methods.sample9Method.sample6Method(1, (err, data) => {
+
+                            expect(err).to.not.exist();
+                            expect(err).to.not.exist();
+                            expect(data).to.equal({
+                                addToSelf: 2,
+                                counter: 5
+                            });
+
+                            return doneTest();
+                        });
+                    },
+                    (doneTest) => {
+                        server.methods.sample9Method.increment((err, data) => {
+
+                            expect(err).to.not.exist();
+                            expect(data).to.equal(2);
+
+                            return doneTest();
+                        });
+                    },
+                    (doneTest) => {
+                        server.methods.sample9Method.decrement((err, data) => {
+
+                            expect(err).to.not.exist();
+                            expect(data).to.equal(-2);
+
+                            return doneTest();
+                        });
+                    }
+                ], () => {
+
+                    return done();
+                });
+            }, 1000);
+        });
+    });
+
     it('will not load malformed methods', (done) => {
 
         register({

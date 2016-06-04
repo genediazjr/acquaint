@@ -320,7 +320,7 @@ module.exports = (route, options) => {
 };
 ```
 
-Method use on other method (Options such as `cache` and `bind` are not available here)
+Method use on other method
 ```js
 const context = require('acquaint');
 
