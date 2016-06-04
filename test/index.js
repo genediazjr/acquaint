@@ -1,6 +1,7 @@
 /* jshint -W079 */
 'use strict';
 
+const Async = require('async');
 const Hapi = require('hapi');
 const Code = require('code');
 const Lab = require('lab');
@@ -374,13 +375,36 @@ describe('registration and functionality', () => {
                 expect(data, 'increment').to.equal(1);
             });
 
+            server.methods.sample1Method.decrement((err, data) => {
+
+                expect(err).to.not.exist();
+                expect(data, 'decrement').to.equal(-1);
+            });
+
             setTimeout(() => {
 
-                server.methods.sample1Method.increment((incErr, data) => {
+                Async.series([
+                    (doneTest) => {
 
-                    expect(incErr).to.not.exist();
-                    expect(data, 'increment').to.equal(1);
+                        server.methods.sample1Method.increment((err, data) => {
 
+                            expect(err).to.not.exist();
+                            expect(data, 'increment').to.equal(1);
+
+                            return doneTest();
+                        });
+                    },
+                    (doneTest) => {
+
+                        server.methods.sample1Method.decrement((err, data) => {
+
+                            expect(err).to.not.exist();
+                            expect(data, 'decrement').to.equal(-1);
+
+                            return doneTest();
+                        });
+                    }
+                ], () => {
                     return done();
                 });
             }, 1000);

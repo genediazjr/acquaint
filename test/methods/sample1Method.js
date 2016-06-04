@@ -1,6 +1,7 @@
 'use strict';
 
 let counter = 0;
+let someCounter = 0;
 
 
 exports.square = (x) => {
@@ -25,6 +26,28 @@ exports.increment = {
     method: (next) => {
 
         return next(null, ++counter);
+    }
+};
+
+exports.decrement = {
+    options: {
+        cache: {
+            expiresIn: 60000,
+            generateTimeout: 60000
+        },
+        bind: {
+            decrement: (next) => {
+
+                return next(null, --someCounter);
+            }
+        }
+    },
+    method: function (next) {
+
+        this.decrement((err, data) => {
+
+            return next(err, data);
+        });
     }
 };
 
