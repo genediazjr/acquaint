@@ -1332,6 +1332,236 @@ describe('registration and functionality', () => {
         });
     });
 
+    it('uses the method options if both config and method option exist', (done) => {
+
+        register({
+            methods: [
+                {
+                    includes: [
+                        'test/methods/subdir/sample6Method.js'
+                    ],
+                    options: {
+                        cache: {
+                            expiresIn: 100,
+                            generateTimeout: 100
+                        }
+                    }
+                }
+            ]
+
+        }, (err) => {
+
+            server.initialize();
+
+            expect(err).to.not.exist();
+
+            server.methods.sample6Method(3, (err, data) => {
+
+                expect(err).to.not.exist();
+                expect(data).to.equal({
+                    addToSelf: 6,
+                    counter: 6
+                });
+            });
+
+            setTimeout(() => {
+
+                server.methods.sample6Method(3, (err, data) => {
+
+                    expect(err).to.not.exist();
+                    expect(data).to.equal({
+                        addToSelf: 6,
+                        counter: 6
+                    });
+
+                    return done();
+                });
+
+            }, 1000);
+        });
+    });
+
+    it('overrides loaded options from methods', (done) => {
+
+        let counter = 0;
+
+        register({
+            methods: [
+                {
+                    includes: [
+                        'test/methods/sample1Method.js'
+                    ],
+                    options: {
+                        bind: {
+                            decrement: (next) => {
+
+                                return next(null, ++counter);
+                            },
+                            divide: (a, b) => {
+
+                                return a * b;
+                            }
+                        },
+                        override: true
+                    }
+                }
+            ]
+        }, (err) => {
+
+            server.initialize();
+
+            expect(err).to.not.exist();
+
+            server.methods.sample1Method.decrement((err, data1) => {
+
+                expect(err).to.not.exist();
+                expect(data1).to.equal(1);
+            });
+
+            server.methods.sample1Method.divide(4, 2, (err, data2) => {
+
+                expect(err).to.not.exist();
+                expect(data2).to.equal(8);
+            });
+
+            setTimeout(() => {
+
+                server.methods.sample1Method.decrement((err, data1) => {
+
+                    expect(err).to.not.exist();
+                    expect(data1).to.equal(2);
+
+                    return done();
+                });
+            }, 1000);
+        });
+    });
+
+    it('merges loaded options from methods', (done) => {
+
+        register({
+            methods: [
+                {
+                    includes: [
+                        'test/methods/subdir/sample2Method.js'
+                    ],
+                    options: {
+                        cache: {
+                            expiresIn: 60000,
+                            generateTimeout: 100
+                        },
+                        merge: true
+                    }
+                }
+            ]
+        }, (err) => {
+
+            server.initialize();
+
+            expect(err).to.not.exist();
+
+            server.methods.sample2Method.fibonacci((err, firstValue) => {
+
+                expect(err).to.not.exist();
+                expect(firstValue).to.equal(2);
+
+                server.methods.sample2Method.fibonacci((err, secondValue) => {
+
+                    expect(err).to.not.exist();
+                    expect(secondValue).to.equal(2);
+
+                    server.methods.sample2Method.fibonacci((err, thirdValue) => {
+
+                        expect(err).to.not.exist();
+                        expect(thirdValue).to.equal(2);
+
+                        return done();
+                    });
+                });
+            });
+        });
+    });
+
+    it('overrides and merges loaded options from methods', (done) => {
+
+        register({
+            methods: [
+                {
+                    includes: [
+                        'test/methods/subdir/sample2Method.js'
+                    ],
+                    options: {
+                        cache: {
+                            expiresIn: 60000,
+                            generateTimeout: 100
+                        },
+                        bind: {
+                            sum: (a, b) => {
+
+                                return a + b * 2;
+                            }
+                        },
+                        merge: true,
+                        override: true
+                    }
+                },
+                {
+                    includes: [
+                        'test/methods/sample1Method.js'
+                    ],
+                    options: {
+                        cache: {
+                            expiresIn: 100,
+                            generateTimeout: 100
+                        },
+                        merge: true,
+                        override: true
+                    }
+                }
+            ]
+        }, (err) => {
+
+            server.initialize();
+
+            expect(err).to.not.exist();
+
+            server.methods.sample1Method.decrement((err, data) => {
+
+                expect(err).to.not.exist();
+                expect(data).to.equal(-3);
+            });
+
+            server.methods.sample2Method.fibonacci((err, firstValue) => {
+
+                expect(err).to.not.exist();
+                expect(firstValue).to.equal(4);
+
+                server.methods.sample2Method.fibonacci((err, secondValue) => {
+
+                    expect(err).to.not.exist();
+                    expect(secondValue).to.equal(4);
+
+                    server.methods.sample2Method.fibonacci((err, thirdValue) => {
+
+                        expect(err).to.not.exist();
+                        expect(thirdValue).to.equal(4);
+                    });
+                });
+            });
+
+            setTimeout(() => {
+
+                server.methods.sample1Method.decrement((err, data) => {
+
+                    expect(err).to.not.exist();
+                    expect(data).to.equal(-4);
+
+                    return done();
+                });
+            }, 1000);
+        });
+    });
+
     it('will not load malformed methods', (done) => {
 
         register({

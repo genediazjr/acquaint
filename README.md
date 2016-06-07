@@ -4,7 +4,7 @@ All glob [rules](https://github.com/isaacs/node-glob/blob/master/README.md) appl
 
 * Supports glob patterns for injecting.
 * Supports direct injection through plugin register options.
-* Supports default options such as `cache` and `bind` on loaded `methods`.
+* Supports *default options* such as `cache` and `bind` on loaded `methods` capable for override or merge.
 
 [![npm version](https://badge.fury.io/js/acquaint.svg)](https://badge.fury.io/js/acquaint)
 [![Dependency Status](https://david-dm.org/genediazjr/acquaint.svg)](https://david-dm.org/genediazjr/acquaint)
@@ -69,6 +69,7 @@ registrations: [
     }
 ]
 ```
+Plugins used inside routes, handlers, and methods must be registered first before acquaint.
 
 ## Options
 * **relativeTo** 
@@ -82,7 +83,9 @@ registrations: [
 * **includes** - `array` of glob `string` pattern/s or the `route`, `handler`, or `method` itself. Required.
 * **ignores** - `array` of glob `string` pattern/s to be excluded while matching. Optional.
 * **prefix** - `string` prefix for methods. Methods use only. Optional.
-* **options** - `object` configuration as default options for loaded methods. Methods use only. Optional.
+* **options** - `object` configuration as *default options* for loaded methods. Methods use only. Optional.
+  * **merge** - `boolean` to merge the keys that does not exist on the loaded options. Defaults to false. Optional.
+  * **override** - `boolean` to force the use of the *default options*. Defaults to false. Optional.
 
 ## Option Examples
 
@@ -217,7 +220,7 @@ options: {
 }
 ```
 
-glob string with default method options (Overridden by file or direct options.)
+glob string with default method options
 ```js
 options: {
     methods: [
@@ -232,6 +235,35 @@ options: {
                     generateTimeout: 60000
                 },
                 bind: someObject
+            }
+        }
+    ]
+}
+```
+
+default options with `merge` and `override`
+```js
+options: {
+    methods: [
+        {
+            prefix: 'model',
+            includes: [
+                'path/to/model/**/*Methods.js'
+            ],
+            options: {
+                cache: {
+                    expiresIn: 60000,
+                    generateTimeout: 60000
+                    override: true
+                },
+                bind: {
+                    operation: (x, next) => {
+                        ...
+                        return next(a);
+                    }
+                },
+                merge: true,
+                override: true
             }
         }
     ]
