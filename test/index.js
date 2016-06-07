@@ -1291,6 +1291,7 @@ describe('registration and functionality', () => {
 
                 Async.series([
                     (doneTest) => {
+
                         server.methods.sample9Method.sample6Method(1, (err, data) => {
 
                             expect(err).to.not.exist();
@@ -1304,6 +1305,7 @@ describe('registration and functionality', () => {
                         });
                     },
                     (doneTest) => {
+
                         server.methods.sample9Method.increment((err, data) => {
 
                             expect(err).to.not.exist();
@@ -1313,6 +1315,7 @@ describe('registration and functionality', () => {
                         });
                     },
                     (doneTest) => {
+
                         server.methods.sample9Method.decrement((err, data) => {
 
                             expect(err).to.not.exist();
