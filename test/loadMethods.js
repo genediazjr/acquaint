@@ -12,7 +12,7 @@ const beforeEach = lab.beforeEach;
 const describe = lab.describe;
 const it = lab.it;
 
-describe('registration and functionality', () => {
+describe('method loading', () => {
 
     let server;
 
@@ -34,86 +34,6 @@ describe('registration and functionality', () => {
             return next(err);
         });
     };
-
-    it('registers without routes, handlers or methods', (done) => {
-
-        register({}, (err) => {
-
-            expect(err).to.not.exist();
-
-            return done();
-        });
-    });
-
-    it('registers with custom working directory', (done) => {
-
-        register({
-            relativeTo: __dirname,
-            routes: [
-                {
-                    includes: [
-                        'routes/**/*1Route.js',
-                        'routes/**/*2Route.js'
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            expect(server.connections[0].table()).to.have.length(2);
-
-            return done();
-        });
-    });
-
-    it('registers routes with inject object', (done) => {
-
-        register({
-            routes: [
-                {
-                    includes: [
-                        'test/routes/**/*1Route.js'
-                    ]
-                },
-                {
-                    includes: [
-                        'test/routes/**/*2Route.js'
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            expect(server.connections[0].table()).to.have.length(2);
-
-            return done();
-        });
-    });
-
-    it('registers handlers with inject object', (done) => {
-
-        register({
-            handlers: [
-                {
-                    includes: [
-                        'test/handlers/**/*1Handler.js'
-                    ]
-                },
-                {
-                    includes: [
-                        'test/handlers/**/*2Handler.js'
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            return done();
-        });
-    });
 
     it('registers methods with inject object', (done) => {
 
@@ -138,42 +58,6 @@ describe('registration and functionality', () => {
         });
     });
 
-    it('has error on no routes found', (done) => {
-
-        register({
-            routes: [
-                {
-                    includes: [
-                        'does/not/*exist.js'
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.exist();
-
-            return done();
-        });
-    });
-
-    it('has error on no handlers found', (done) => {
-
-        register({
-            handlers: [
-                {
-                    includes: [
-                        'does/not/*exist.js'
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.exist();
-
-            return done();
-        });
-    });
-
     it('has error on no methods found', (done) => {
 
         register({
@@ -192,153 +76,24 @@ describe('registration and functionality', () => {
         });
     });
 
-    it('has error on invalid syntax', (done) => {
+    it('will not load malformed methods', (done) => {
 
         register({
             methods: [
                 {
-                    includes: () => {
-                    }
+                    includes: [
+                        'test/methods/**/*1Method.js'
+                    ]
                 }
             ]
         }, (err) => {
 
-            expect(err).to.exist();
+            expect(err).to.not.exist();
+
+            expect(server.methods.sample1Method.square).to.exist();
+            expect(server.methods.sample1Method.thisWillBeNotRegistered).to.not.exist();
 
             return done();
-        });
-    });
-
-    it('has usable autoloaded routes', (done) => {
-
-        register({
-            routes: [
-                {
-                    includes: [
-                        'test/routes/**/*1Route.js'
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            server.inject({
-                method: 'get',
-                url: '/test1'
-            }, (res) => {
-
-                expect(res.statusCode).to.be.equal(200);
-
-                return done();
-            });
-        });
-    });
-
-    it('has usable autoloaded routes using direct inject', (done) => {
-
-        register({
-            routes: [
-                {
-                    includes: [
-                        {
-                            path: '/test1',
-                            method: 'GET',
-                            handler: (request, reply) => {
-
-                                return reply('hello');
-                            }
-                        }
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            server.inject({
-                method: 'get',
-                url: '/test1'
-            }, (res) => {
-
-                expect(res.statusCode).to.be.equal(200);
-
-                return done();
-            });
-        });
-    });
-
-    it('has usable autoloaded handlers', (done) => {
-
-        register({
-            handlers: [
-                {
-                    includes: [
-                        'test/handlers/**/*1Handler.js'
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            server.route({
-                method: 'get',
-                path: '/test1',
-                handler: {
-                    sample1Handler: {}
-                }
-            });
-
-            server.inject({
-                method: 'get',
-                url: '/test1'
-            }, (res) => {
-
-                expect(res.statusCode).to.be.equal(200);
-
-                return done();
-            });
-        });
-    });
-
-    it('has usable autoloaded handlers using direct inject', (done) => {
-
-        register({
-            handlers: [
-                {
-                    includes: [
-                        function sample1Handler() {
-
-                            return (request, reply) => {
-
-                                return reply('hello');
-                            };
-                        }
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            server.route({
-                method: 'get',
-                path: '/test1',
-                handler: {
-                    sample1Handler: {}
-                }
-            });
-
-            server.inject({
-                method: 'get',
-                url: '/test1'
-            }, (res) => {
-
-                expect(res.statusCode).to.be.equal(200);
-
-                return done();
-            });
         });
     });
 
@@ -492,78 +247,6 @@ describe('registration and functionality', () => {
                     return done();
                 });
             }, 1000);
-        });
-    });
-
-    it('has usable handlers on routes', (done) => {
-
-        register({
-            routes: [
-                {
-                    includes: [
-                        'test/routes/**/*3Route.js'
-                    ]
-                }
-            ],
-            handlers: [
-                {
-                    includes: [
-                        'test/handlers/**/*1Handler.js'
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            server.inject({
-                method: 'get',
-                url: '/test3'
-            }, (res) => {
-
-                expect(res.statusCode).to.be.equal(200);
-
-                return done();
-            });
-        });
-    });
-
-    it('has usable handlers on routes using direct inject', (done) => {
-
-        register({
-            routes: [
-                {
-                    includes: [
-                        'test/routes/**/*3Route.js'
-                    ]
-                }
-            ],
-            handlers: [
-                {
-                    includes: [
-                        function sample1Handler() {
-
-                            return (request, reply) => {
-
-                                return reply('hello');
-                            };
-                        }
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            server.inject({
-                method: 'get',
-                url: '/test3'
-            }, (res) => {
-
-                expect(res.statusCode).to.be.equal(200);
-
-                return done();
-            });
         });
     });
 
@@ -1559,93 +1242,6 @@ describe('registration and functionality', () => {
                     return done();
                 });
             }, 1000);
-        });
-    });
-
-    it('will not load malformed methods', (done) => {
-
-        register({
-            methods: [
-                {
-                    includes: [
-                        'test/methods/**/*1Method.js'
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            expect(server.methods.sample1Method.square).to.exist();
-            expect(server.methods.sample1Method.thisWillBeNotRegistered).to.not.exist();
-
-            return done();
-        });
-    });
-
-    it('will not load malformed methods using direct inject', (done) => {
-
-        let counter = 0;
-
-        register({
-            methods: [
-                {
-                    prefix: 'sample1Method',
-                    includes: [
-                        {
-                            options: {
-                                cache: {
-                                    expiresIn: 60000,
-                                    generateTimeout: 60000
-                                }
-                            },
-                            something: function thisWillBeNotRegistered(next) {
-
-                                return next(null, ++counter);
-                            }
-                        }
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.exist();
-            expect(err).to.match(/Unable to identify method name. Please refer to method options API./i);
-
-            return done();
-        });
-    });
-
-    it('will not load anonymous function methods using direct inject', (done) => {
-
-        let counter = 0;
-
-        register({
-            methods: [
-                {
-                    prefix: 'sample1Method',
-                    includes: [
-                        {
-                            options: {
-                                cache: {
-                                    expiresIn: 60000,
-                                    generateTimeout: 60000
-                                }
-                            },
-                            method: function (next) {
-
-                                return next(null, ++counter);
-                            }
-                        }
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.exist();
-            expect(err).to.match(/Unable to identify method name. Please refer to method options API./i);
-
-            return done();
         });
     });
 });
