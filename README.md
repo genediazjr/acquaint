@@ -1,4 +1,6 @@
 # acquaint
+
+[![Join the chat at https://gitter.im/genediazjr/acquaint](https://badges.gitter.im/genediazjr/acquaint.svg)](https://gitter.im/genediazjr/acquaint?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Hapi plugin to load `routes`, `handlers`, and `methods` through [globs](https://github.com/isaacs/node-glob).
 All glob [rules](https://github.com/isaacs/node-glob/blob/master/README.md) apply. 
 
