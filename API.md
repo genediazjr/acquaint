@@ -38,6 +38,13 @@ server.register({
                     'path/to/**/*Utils.js'
                 ]
             }
+        ],
+        binds: [
+            {
+                includes: [
+                    'path/to/server/*Binds.js'
+                ]
+            }
         ]
     }
 }, (err) => {
@@ -62,10 +69,11 @@ You may see this sample usage in a [TodoMVC](https://github.com/genediazjr/hapit
 ### Options
 * `relativeTo`
   * String of the current working directory in which to search. Defaults to `process.cwd()`.
-* `routes`, `handlers`, and `methods`
+* `routes`, `handlers`, `methods`, and `binds`
   * Array of [inject objects](#inject-object) to be included.
-  * You may specify only routes if you only want to autoload routes. The same for handlers, and methods.
+  * You may specify only routes if you only want to autoload routes. The same for handlers, methods, and binds.
   * Returns an `error` if no files are retrieved on the specified [glob](https://github.com/isaacs/node-glob) pattern.
+  * For `bind` keys with duplicates, the last entry will be used.
 
 ##### Inject Object
 * `includes` - array of glob string pattern/s or the `route`, `handler`, or `method` itself. Required.
@@ -258,6 +266,50 @@ options: {
 }
 ```
 
+##### Bind Example
+
+glob string
+```js
+options: {
+    binds: [
+        {
+            includes: [
+                'path/to/server/*Binds.js'
+            ]
+        }
+    ]
+}
+```
+
+or the bind itself (Name is required for sole functions. Don't use arrow functions.)
+```js
+options: {
+    binds: [
+        {
+            includes: [
+                function methodName (x, y) {
+                    ...
+                    return x + y + z;
+                },
+                'path/to/server/*Binds.js'
+            ]
+        },
+        {
+            includes: [{
+                someMethod: function() {
+                    ...
+                    return a * b;
+                },
+                someAmount: {
+                    min: 20,
+                    max: 95
+                },
+                someValue: 'lorem ipsum'
+            }]
+        }
+    ]
+}
+```
 
 See the [tests](test) for other examples.
 
