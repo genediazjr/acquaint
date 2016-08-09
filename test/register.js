@@ -110,7 +110,7 @@ describe('registration', () => {
         }, (err) => {
 
             expect(err).to.exist();
-            expect(err).to.match(/Unable to identify method name. Please refer to method options API./i);
+            expect(err).to.match(/Unable to identify method name. Please refer to method loading API./i);
 
             return done();
         });
@@ -143,7 +143,7 @@ describe('registration', () => {
         }, (err) => {
 
             expect(err).to.exist();
-            expect(err).to.match(/Unable to identify method name. Please refer to method options API./i);
+            expect(err).to.match(/Unable to identify method name. Please refer to method loading API./i);
 
             return done();
         });
