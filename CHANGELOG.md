@@ -1,5 +1,5 @@
 # v1.3.0
-- Add autoloading binds (server.bind)
+- Add autoloading binds ([server.bind](http://hapijs.com/api#serverbindcontext))
 
 # v1.2.1
 - Update dependencies
