@@ -1,3 +1,6 @@
+# v1.3.0
+- Add autoloading binds (server.bind)
+
 # v1.2.1
 - Update dependencies
 

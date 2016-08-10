@@ -6,7 +6,7 @@
 [![npm version](https://badge.fury.io/js/acquaint.svg)](https://www.npmjs.com/acquaint)
 [![Dependency Status](https://david-dm.org/genediazjr/acquaint.svg)](https://david-dm.org/genediazjr/acquaint)
 
-Hapi plugin to load `routes`, `handlers`, and `methods` through [globs](https://github.com/isaacs/node-glob).
+Hapi plugin to load `routes`, `handlers`, `methods`, and `binds` (server.bind) through [globs](https://github.com/isaacs/node-glob).
 All glob [rules](https://github.com/isaacs/node-glob/blob/master/README.md) apply.
 
 * Supports glob patterns for injecting.
