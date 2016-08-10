@@ -34,6 +34,19 @@ describe('bind loading', () => {
         });
     };
 
+    it('exposes binds through the plugin', (done) => {
+
+        register({
+            binds: [{ includes: [{ test: 'value' }] }]
+        }, (err) => {
+
+            expect(err).to.not.exist();
+            expect(Plugin.binds).to.equal({ test: 'value' });
+
+            return done();
+        });
+    });
+
     it('registers binds with inject object', (done) => {
 
         register({

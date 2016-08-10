@@ -34,6 +34,19 @@ describe('app loading', () => {
         });
     };
 
+    it('exposes apps through the plugin', (done) => {
+
+        register({
+            apps: [{ includes: [{ foo: 'bar' }] }]
+        }, (err) => {
+
+            expect(err).to.not.exist();
+            expect(Plugin.apps).to.equal({ foo: 'bar' });
+
+            return done();
+        });
+    });
+
     it('registers apps with inject object', (done) => {
 
         register({
