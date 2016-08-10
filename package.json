@@ -1,8 +1,8 @@
 {
   "name": "acquaint",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "author": "Gene Diaz <genediazjr@gmail.com> (http://genediazjr.com/)",
-  "description": "Routes, Handlers, Methods, and Binds Autoloader",
+  "description": "Routes, Handlers, Methods, Binds (server.bind), and Apps (server.app) Autoloader",
   "keywords": [
     "hapi",
     "route",

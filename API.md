@@ -45,6 +45,13 @@ server.register({
                     'path/to/server/*Binds.js'
                 ]
             }
+        ],
+        apps: [
+            {
+                includes: [
+                    'path/to/server/*Apps.js'
+                ]
+            }
         ]
     }
 }, (err) => {
@@ -69,7 +76,7 @@ You may see this sample usage in a [TodoMVC](https://github.com/genediazjr/hapit
 ### Options
 * `relativeTo`
   * String of the current working directory in which to search. Defaults to `process.cwd()`.
-* `routes`, `handlers`, `methods`, and `binds`
+* `routes`, `handlers`, `methods`, `binds`, and `apps`
   * Array of [inject objects](#inject-object) to be included.
   * You may specify only routes if you only want to autoload routes. The same for handlers, methods, and binds.
   * Returns an `error` if no files are retrieved on the specified [glob](https://github.com/isaacs/node-glob) pattern.
@@ -289,30 +296,29 @@ options: {
 or the bind itself (Name is required for sole functions. Don't use arrow functions.)
 ```js
 options: {
-    binds: [
+    binds: [{ includes: [{ foo: 'bar'}] }]
+}
+```
+
+##### App Example
+
+glob string
+```js
+options: {
+    apps: [
         {
             includes: [
-                function methodName (x, y) {
-                    ...
-                    return x + y + z;
-                },
-                'path/to/server/*Binds.js'
+                'path/to/server/*Apps.js'
             ]
-        },
-        {
-            includes: [{
-                someMethod: function() {
-                    ...
-                    return a * b;
-                },
-                someAmount: {
-                    min: 20,
-                    max: 95
-                },
-                someValue: 'lorem ipsum'
-            }]
         }
     ]
+}
+```
+
+or the app object itself.
+```js
+options: {
+    apps: [{ includes: [{ foo: 'bar'}] }]
 }
 ```
 

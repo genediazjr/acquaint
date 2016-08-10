@@ -1,3 +1,7 @@
+# v1.4.0
+- Add autoloading apps ([server.app](http://hapijs.com/api#serverapp))
+- Expose binds and apps through the plugin
+
 # v1.3.0
 - Add autoloading binds ([server.bind](http://hapijs.com/api#serverbindcontext))
 
