@@ -73,6 +73,11 @@ You may see this sample usage in a [TodoMVC](https://github.com/genediazjr/hapit
   * Array of [inject objects](#inject-object) to be included.
   * You may specify only routes if you only want to autoload routes. The same for handlers, methods, and binds.
   * Returns an `error` if no files are retrieved on the specified [glob](https://github.com/isaacs/node-glob) pattern.
+
+Caveats of `binds` (server.bind):
+  * Will not work if the route was registerd outside of the plugin.
+  * Will not work if the route has a handler that is autoloaded as well.
+  * External `binds` will not be usable on autoloaded handlers.
   * For `bind` keys with duplicates, the last entry will be used.
 
 ##### Inject Object
