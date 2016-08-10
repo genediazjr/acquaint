@@ -11,7 +11,8 @@ All glob [rules](https://github.com/isaacs/node-glob/blob/master/README.md) appl
 
 * Supports glob patterns for injecting.
 * Supports direct injection through plugin register options.
-* Supports *default options* such as `cache` and `bind` on loaded `methods` capable for override or merge.
+* Access autoloaded methods on other methods with working `cache` and `bind`.
+* Set *default options* such as `cache` and `bind` on loaded `methods` capable for override or merge.
 
 Head to the [API](API.md) documentation.
 
