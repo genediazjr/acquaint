@@ -16,6 +16,8 @@ All glob [rules](https://github.com/isaacs/node-glob/blob/master/README.md) appl
 
 Head to the [API](API.md) documentation.
 
+See it in action in this [TodoMVC demo](https://github.com/genediazjr/hapitodo) for hapi.
+
 ## Credits
 * [hapi-router](https://github.com/bsiddiqui/hapi-router) - Auto route loading for Hapi
 * [hapi-handlers](https://github.com/ar4mirez/hapi-handlers) - Autoload handlers for Hapi

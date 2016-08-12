@@ -8,12 +8,12 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 
 # Indentation override for all JS under lib directory
-[server/**.js, server/**.json]
+[**.js, **.json]
 curly_bracket_next_line = false
 spaces_around_operators = true
 spaces_around_brackets = true
 indent_style = space
 quote_type = single
-indent_size = 2
-tab_width = 2
+indent_size = 4
+tab_width = 4
 charset = utf-8
