@@ -82,7 +82,7 @@ You may see this sample usage in a [TodoMVC](https://github.com/genediazjr/hapit
   * Returns an `error` if no files are retrieved on the specified [glob](https://github.com/isaacs/node-glob) pattern.
 
 Caveats of `binds` ([server.bind](http://hapijs.com/api#serverbindcontext)):
-  * Will not work if the route was registerd outside of the plugin.
+  * Will not work if the route was registered outside of the plugin.
   * Will not work if the route has a handler that is autoloaded as well.
   * External `binds` will not be usable on autoloaded handlers.
   * For `bind` keys with duplicates, the last entry will be used.
