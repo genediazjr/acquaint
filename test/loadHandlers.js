@@ -117,7 +117,7 @@ describe('handler loading', () => {
                     includes: [
                         function sample1Handler() {
 
-                            return (request, reply) => {
+                            return function (request, reply) {
 
                                 return reply('hello');
                             };
@@ -197,7 +197,7 @@ describe('handler loading', () => {
                     includes: [
                         function sample1Handler() {
 
-                            return (request, reply) => {
+                            return function (request, reply) {
 
                                 return reply('hello');
                             };

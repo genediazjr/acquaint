@@ -2,7 +2,7 @@
 
 module.exports = () => {
 
-    return (request, reply) => {
+    return function (request, reply) {
 
         return reply('hello');
     };

@@ -4,7 +4,7 @@ module.exports = [
     {
         path: '/test2',
         method: 'GET',
-        handler: (request, reply) => {
+        handler: function (request, reply) {
 
             return reply('hello');
         }

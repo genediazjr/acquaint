@@ -121,7 +121,7 @@ options: {
                 {
                     path: '/test1',
                     method: 'get',
-                    handler: (request, reply) => {
+                    handler: function (request, reply) {
                         ...
                         return reply('hello');
                     }
@@ -156,7 +156,7 @@ options: {
             includes: [
                 function handlerName (route, options) {
 
-                    return (request, reply) => {
+                    return function (request, reply) {
                         ...
                         return reply('hello');
                     };
@@ -332,7 +332,7 @@ module.exports = [
     {
         path: '/',
         method: 'get',
-        handler: (request, reply) => {
+        handler: function (request, reply) {
             ...
             return reply('hello');
         }
@@ -344,7 +344,7 @@ module.exports = [
 ```js
 module.exports = (route, options) => {
 
-    return (request, reply) => {
+    return function (request, reply) {
         ...
         return reply('hello');
     };
@@ -394,7 +394,7 @@ Method use on handler
 ```js
 module.exports = (route, options) => {
 
-    return (request, reply) => {
+    return function (request, reply) {
 
         request.server.methods.methodPrefix.FileName.exportedFunction(user, (err, data) => {
             ...

@@ -155,7 +155,7 @@ describe('app loading', () => {
 
             server.handler('someHandler', () => {
 
-                return (request, reply) => {
+                return function (request, reply) {
 
                     return reply(request.server.app.foo);
                 };

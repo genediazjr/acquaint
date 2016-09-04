@@ -2,7 +2,7 @@
 
 module.exports = (route, options) => {
 
-    return (request, reply) => {
+    return function (request, reply) {
 
         return reply(request.server.methods.sample1Method.square(options.value));
     };
