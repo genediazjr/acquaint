@@ -434,3 +434,7 @@ module.exports = {
     }
 };
 ```
+
+### Known Issues
+
+Node v4 and below is not able to set the key name as the default function name so avoid using anonymous functions for your methods. 
