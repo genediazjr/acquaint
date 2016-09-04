@@ -116,7 +116,7 @@ describe('registration', () => {
         });
     });
 
-    it('will not load anonymous function methods using direct inject', (done) => {
+    it('will load anonymous function methods using the key name as method name using direct inject', (done) => {
 
         let counter = 0;
 
@@ -142,8 +142,8 @@ describe('registration', () => {
             ]
         }, (err) => {
 
-            expect(err).to.exist();
-            expect(err).to.match(/Unable to identify method name. Please refer to method loading API./i);
+            expect(err).to.not.exist();
+            expect(server.methods.sample1Method.method).to.exist();
 
             return done();
         });
