@@ -115,37 +115,4 @@ describe('registration', () => {
             return done();
         });
     });
-
-    it('will load anonymous function methods using the key name as method name using direct inject', (done) => {
-
-        let counter = 0;
-
-        register({
-            methods: [
-                {
-                    prefix: 'sample1Method',
-                    includes: [
-                        {
-                            options: {
-                                cache: {
-                                    expiresIn: 60000,
-                                    generateTimeout: 60000
-                                }
-                            },
-                            method: function (next) {
-
-                                return next(null, ++counter);
-                            }
-                        }
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-            expect(server.methods.sample1Method.method).to.exist();
-
-            return done();
-        });
-    });
 });
