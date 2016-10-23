@@ -2,8 +2,8 @@
 [![Build Status](https://travis-ci.org/genediazjr/acquaint.svg?branch=master)](https://travis-ci.org/genediazjr/acquaint)
 [![Coverage Status](https://coveralls.io/repos/github/genediazjr/acquaint/badge.svg?branch=master)](https://coveralls.io/github/genediazjr/acquaint?branch=master)
 [![Code Climate](https://codeclimate.com/github/genediazjr/acquaint/badges/gpa.svg)](https://codeclimate.com/github/genediazjr/acquaint)
-[![NPM Downloads](https://img.shields.io/npm/dt/acquaint.svg?maxAge=2592000)](https://www.npmjs.com/acquaint)
 [![NPM Version](https://badge.fury.io/js/acquaint.svg)](https://www.npmjs.com/acquaint)
+[![NPM Downloads](https://img.shields.io/npm/dt/acquaint.svg?maxAge=2592000)](https://www.npmjs.com/acquaint)<br>
 [![Dependency Status](https://david-dm.org/genediazjr/acquaint.svg)](https://david-dm.org/genediazjr/acquaint)
 [![Known Vulnerabilities](https://snyk.io/test/github/genediazjr/acquaint/badge.svg)](https://snyk.io/test/github/genediazjr/acquaint)
 [![NSP Status](https://nodesecurity.io/orgs/genediazjr/projects/0529cc6b-00ac-49bb-a99c-96f7405222ba/badge)](https://nodesecurity.io/orgs/genediazjr/projects/0529cc6b-00ac-49bb-a99c-96f7405222ba)
