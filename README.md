@@ -8,7 +8,7 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/genediazjr/acquaint/badge.svg)](https://snyk.io/test/github/genediazjr/acquaint)
 [![NSP Status](https://nodesecurity.io/orgs/genediazjr/projects/0529cc6b-00ac-49bb-a99c-96f7405222ba/badge)](https://nodesecurity.io/orgs/genediazjr/projects/0529cc6b-00ac-49bb-a99c-96f7405222ba)
 
-Hapi plugin to load `routes`, `handlers`, `methods`, `binds` ([server.bind](http://hapijs.com/api#serverbindcontext)), and `apps` ([server.app](http://hapijs.com/api#serverapp)) through [globs](https://github.com/isaacs/node-glob).
+Hapi plugin to load `routes`, `handlers`, `methods`, `binds` ([server.bind](http://hapijs.com/api#serverbindcontext)), and `apps` ([server.app](http://hapijs.com/api#serverapp)) through [globs](https://github.com/isaacs/node-glob).<br>
 All glob [rules](https://github.com/isaacs/node-glob/blob/master/README.md) apply.
 
 * Supports glob patterns for injecting.
