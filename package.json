@@ -1,6 +1,6 @@
 {
   "name": "acquaint",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "author": "Gene Diaz <genediazjr@gmail.com> (http://genediazjr.com/)",
   "description": "Routes, Handlers, Methods, Binds (server.bind), and Apps (server.app) Autoloader",
   "keywords": [
