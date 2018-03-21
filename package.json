@@ -25,14 +25,14 @@
     "test-cover": "lab -c -v -L -a code -r html -o ./coverage.html -L && open ./coverage.html"
   },
   "dependencies": {
-    "joi": "10.0.x",
+    "joi": "13.1.x",
     "glob": "7.1.x",
     "async": "2.1.x"
   },
   "devDependencies": {
-    "coveralls": "2.11.x",
-    "hapi": "15.2.x",
-    "code": "4.0.x",
-    "lab": "11.2.x"
+    "code": "5.2.x",
+    "coveralls": "3.0.x",
+    "hapi": "17.2.3",
+    "lab": "15.4.x"
   }
 }

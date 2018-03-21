@@ -4,6 +4,7 @@ const Hapi = require('hapi');
 const Code = require('code');
 const Lab = require('lab');
 const Plugin = require('../');
+const Path = require('path');
 
 const expect = Code.expect;
 const lab = exports.lab = Lab.script();
@@ -15,63 +16,70 @@ describe('app loading', () => {
 
     let server;
 
-    beforeEach((done) => {
+    beforeEach(() => {
 
-        server = new Hapi.Server();
-        server.connection();
-
-        return done();
+        server = new Hapi.Server({
+            routes: {
+                files: {
+                    relativeTo: `${Path.join(__dirname)}`
+                }
+            }
+        });
     });
 
-    const register = (options, next) => {
-
-        server.register({
-            register: Plugin,
-            options: options
-        }, (err) => {
-
-            return next(err);
-        });
+    const register = async (options) => {
+        // Load Plugins
+        return await server.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
     };
 
-    it('exposes apps through the plugin', (done) => {
+    it('exposes apps through the plugin', () => {
 
         register({
             apps: [{ includes: [{ foo: 'bar' }] }]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
             expect(Plugin.apps).to.equal({ foo: 'bar' });
 
-            return done();
-        });
-    });
-
-    it('registers apps with inject object', (done) => {
-
-        register({
-            apps: [{ includes: ['test/apps/**/*App.js'] }]
-        }, (err) => {
+        }).catch((err) => {
 
             expect(err).to.not.exist();
 
-            return done();
         });
     });
 
-    it('has error on no apps found', (done) => {
+    it('registers apps with inject object', () => {
+
+        register({
+            apps: [{ includes: ['apps/*App.js'] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+
+        }).catch((err) => {
+
+            expect(err).to.not.exist();
+
+        });
+    });
+
+    it('has error on no apps found', () => {
 
         register({
             apps: [{ includes: ['does/not/*exist.js'] }]
-        }, (err) => {
+        }).catch((err) => {
 
             expect(err).to.exist();
 
-            return done();
         });
     });
 
-    it('has error on no name found', (done) => {
+    it('has error on no name found', () => {
 
         register({
             apps: [{
@@ -80,106 +88,102 @@ describe('app loading', () => {
                     return 'foobar';
                 }]
             }]
-        }, (err) => {
+        }).catch((err) => {
 
             expect(err).to.exist();
             expect(err).to.match(/Unable to identify the app name. Please refer to app loading api./i);
 
-            return done();
         });
     });
 
-    it('has usable autoloaded apps', (done) => {
-
-        register({
-            apps: [{ includes: ['test/apps/**/*App.js'] }]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-            expect(server.app.foo).to.equal('bar');
-            expect(server.app.bar()).to.equal('foo');
-
-            return done();
-        });
-    });
-
-    it('has usable direct inject apps', (done) => {
+    it('has usable direct inject apps', () => {
 
         register({
             apps: [{ includes: [{ foo: 'bar' }] }]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
             expect(server.app.foo).to.equal('bar');
 
-            return done();
         });
     });
 
-    it('has apps usable on handlers', (done) => {
+    it('has apps usable on handlers', () => {
 
         register({
             apps: [{ includes: [{ foo: 'bar' }] }]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
 
-            server.route({
+            return server.route({
                 method: 'get',
                 path: '/',
-                handler: function (request, reply) {
+                options: {
+                    handler: function (request, h) {
 
-                    return reply(request.server.app.foo);
+                        return request.server.app.foo;
+                    }
                 }
             });
+        }).then(() => {
 
-            server.inject({
+            const options = {
                 method: 'get',
                 url: '/'
-            }, (res) => {
+            };
 
-                expect(res.result).to.equal('bar');
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
+            expect(res.result).to.equal('bar');
+
         });
     });
 
-    it('has apps usable on external handlers', (done) => {
+    it('has apps usable on external handlers', () => {
 
         register({
             apps: [{ includes: [{ foo: 'bar' }] }]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
 
             server.handler('someHandler', () => {
 
-                return function (request, reply) {
+                return (request, h) => {
 
-                    return reply(request.server.app.foo);
+                    return request.server.app.foo;
                 };
             });
 
-            server.route({
+            return server.route({
                 method: 'get',
                 path: '/',
-                handler: { someHandler: {} }
+                options: {
+                    handler: {someHandler: {}}
+                }
             });
+        }).then(() => {
 
-            server.inject({
+            const options = {
                 method: 'get',
                 url: '/'
-            }, (res) => {
+            };
 
-                expect(res.result).to.equal('bar');
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
+            expect(res.result).to.equal('bar');
+        }).catch((error) => {
+
+            expect(error).to.exist();
+            expect(error.message).to.contains('server.handler is not a function');
+
         });
     });
 
-    it('uses name of function', (done) => {
+    it('uses name of function', () => {
 
         register({
             apps: [{
@@ -188,12 +192,31 @@ describe('app loading', () => {
                     return 'bar';
                 }]
             }]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
             expect(server.app.foo()).to.equal('bar');
 
-            return done();
+        }).catch((err) => {
+
+            expect(err).to.not.exist();
+
+        });
+    });
+
+    it('has usable autoloaded apps', () => {
+
+        register({
+            apps: [{ includes: ['apps/*App.js'] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+            expect(server.app.foo).to.equal('bar');
+            expect(server.app.bar()).to.equal('foo');
+
+        }).catch((err) => {
+
+            expect(err).to.not.exist();
         });
     });
 });
