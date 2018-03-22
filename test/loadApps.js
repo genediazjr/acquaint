@@ -141,7 +141,7 @@ describe('app loading', () => {
         });
     });
 
-    it('has apps usable on external handlers', () => {
+    it('has apps usable on external handlers with depricated server.handler', () => {
 
         register({
             apps: [{ includes: [{ foo: 'bar' }] }]
@@ -180,6 +180,42 @@ describe('app loading', () => {
             expect(error).to.exist();
             expect(error.message).to.contains('server.handler is not a function');
 
+        });
+    });
+
+    it('has apps usable on external handlers with new server.decorate', () => {
+
+        register({
+            apps: [{ includes: [{ foo: 'bar' }] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+
+            server.decorate('handler', 'someHandler', () => {
+
+                return (request, h) => {
+
+                    return request.server.app.foo;
+                };
+            });
+
+            return server.route({
+                method: 'get',
+                path: '/',
+                options: {
+                    handler: {someHandler: {}}
+                }
+            });
+        }).then(() => {
+
+            const options = {
+                method: 'get',
+                url: '/'
+            };
+
+            return server.inject(options);
+        }).then((res) => {
+            expect(res.result).to.equal('bar');
         });
     });
 
