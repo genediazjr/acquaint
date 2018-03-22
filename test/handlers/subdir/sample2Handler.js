@@ -2,8 +2,8 @@
 
 module.exports = (route, options) => {
 
-    return function (request, reply) {
+    return function (request, h) {
 
-        return reply('new handler: ' + options.msg);
+        return `new handler ${options.msg}`;
     };
 };

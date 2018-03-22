@@ -1,9 +1,9 @@
 'use strict';
 
-const Hapi = require('hapi');
+let Hapi = require('hapi');
+let Plugin = require('../');
 const Code = require('code');
 const Lab = require('lab');
-const Plugin = require('../');
 const Path = require('path');
 
 const expect = Code.expect;
@@ -16,7 +16,8 @@ describe('bind loading', () => {
     let server;
 
     beforeEach(() => {
-
+        Hapi = require('hapi');
+        Plugin = require('../');
         server = new Hapi.Server({
             routes: {
                 files: {
@@ -36,73 +37,73 @@ describe('bind loading', () => {
         ]);
     };
 
-    // it('exposes binds through the plugin', () => {
-    //
-    //     register({
-    //         binds: [{ includes: [{ test: 'value1' }] }]
-    //     }).then((resolved) => {
-    //
-    //         expect(resolved).to.not.exist();
-    //         expect(Plugin.binds).to.equal({ test: 'value1' });
-    //
-    //     }).catch((err) => {
-    //
-    //         expect(err).to.not.exist();
-    //
-    //     });
-    // });
-    //
-    // it('registers binds with inject object', () => {
-    //
-    //     register({
-    //         binds: [{ includes: ['methods/**/*5Method.js'] }]
-    //     }).then((resolved) => {
-    //
-    //         expect(resolved).to.not.exist();
-    //
-    //     }).catch((err) => {
-    //
-    //         expect(err).to.not.exist();
-    //
-    //     });
-    // });
-    //
-    // it('has error on no binds found', () => {
-    //
-    //     register({
-    //         binds: [{ includes: ['does/not/*exist.js'] }]
-    //     }).then((resolved) => {
-    //
-    //         expect(resolved).to.not.exist();
-    //
-    //     }).catch((err) => {
-    //
-    //         expect(err).to.exist();
-    //
-    //     });
-    // });
-    //
-    // it('has error on no name found', () => {
-    //
-    //     register({
-    //         binds: [{
-    //             includes: [() => {
-    //
-    //                 return 'foobar';
-    //             }]
-    //         }]
-    //     }).then((resolved) => {
-    //
-    //         expect(resolved).to.not.exist();
-    //
-    //     }).catch((err) => {
-    //
-    //         expect(err).to.exist();
-    //         expect(err).to.match(/Unable to identify the bind name. Please refer to bind loading api./i);
-    //
-    //     });
-    // });
-    //
+    it('exposes binds through the plugin', () => {
+
+        register({
+            binds: [{ includes: [{ test: 'value1' }] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+            expect(Plugin.binds).to.equal({ test: 'value1' });
+
+        }).catch((err) => {
+
+            expect(err).to.not.exist();
+
+        });
+    });
+
+    it('registers binds with inject object', () => {
+
+        register({
+            binds: [{ includes: ['methods/**/*5Method.js'] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+
+        }).catch((err) => {
+
+            expect(err).to.not.exist();
+
+        });
+    });
+
+    it('has error on no binds found', () => {
+
+        register({
+            binds: [{ includes: ['does/not/*exist.js'] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
+        });
+    });
+
+    it('has error on no name found', () => {
+
+        register({
+            binds: [{
+                includes: [() => {
+
+                    return 'foobar';
+                }]
+            }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
+            expect(err).to.match(/Unable to identify the bind name. Please refer to bind loading api./i);
+
+        });
+    });
+
     it('has usable autoloaded binds with included routes', () => {
 
         register({

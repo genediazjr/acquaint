@@ -22,13 +22,13 @@ module.exports = {
                 }
             }
         },
-        method: function (next) {
+        method: function () {
 
             const value = this.sum(current, previous);
             previous = current;
             current = value;
 
-            return next(null, value);
+            return value;
         }
     }
 };

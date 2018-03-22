@@ -9,28 +9,19 @@ exports.sample8Method = (a) => {
 };
 
 
-exports.sample6Method = (a, next) => {
+exports.sample6Method = (a) => {
 
-    Plugin.methods.sample6Method(a, (err, data) => {
-
-        return next(err, data);
-    });
+    return Plugin.methods.sample6Method(a);
 };
 
 
-exports.increment = (next) => {
+exports.increment = () => {
 
-    Plugin.methods.sample1Method.increment((err, data) => {
-
-        return next(err, data);
-    });
+    return Plugin.methods.sample1Method.increment();
 };
 
 
-exports.decrement = (next) => {
+exports.decrement = () => {
 
-    Plugin.methods.sample1Method.decrement((err, data) => {
-
-        return next(err, data);
-    });
+    return Plugin.methods.sample1Method.decrement();
 };

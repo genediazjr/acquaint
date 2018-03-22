@@ -2,8 +2,8 @@
 
 module.exports = () => {
 
-    return function (request, reply) {
+    return function (request, h) {
 
-        return reply('hello');
+        return 'hello';
     };
 };

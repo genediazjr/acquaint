@@ -2,7 +2,7 @@
 
 let counter = 0;
 
-module.exports = (next) => {
+module.exports = () => {
 
-    return next(null, --counter);
+    return --counter;
 };

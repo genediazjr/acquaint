@@ -1,9 +1,10 @@
 'use strict';
 
-const Hapi = require('hapi');
+let Hapi = require('hapi');
 const Code = require('code');
 const Lab = require('lab');
-const Plugin = require('../');
+let Plugin = require('../');
+const Path = require('path');
 
 const expect = Code.expect;
 const lab = exports.lab = Lab.script();
@@ -15,49 +16,52 @@ describe('handler loading', () => {
 
     let server;
 
-    beforeEach((done) => {
+    beforeEach(() => {
 
-        server = new Hapi.Server();
-        server.connection();
+        Hapi = require('hapi');
+        Plugin = require('../');
 
-        return done();
+        server = new Hapi.Server({
+            routes: {
+                files: {
+                    relativeTo: `${Path.join(__dirname)}`
+                }
+            }
+        });
     });
 
-    const register = (options, next) => {
-
-        server.register({
-            register: Plugin,
-            options: options
-        }, (err) => {
-
-            return next(err);
-        });
+    const register = async (options) => {
+        // Load Plugins
+        return await server.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
     };
 
-    it('registers handlers with inject object', (done) => {
+    it('registers handlers with inject object', () => {
 
         register({
             handlers: [
                 {
                     includes: [
-                        'test/handlers/**/*1Handler.js'
+                        'handlers/**/*1Handler.js'
                     ]
                 },
                 {
                     includes: [
-                        'test/handlers/**/*2Handler.js'
+                        'handlers/**/*2Handler.js'
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
-
-            return done();
+            expect(resolved).to.not.exist();
         });
     });
 
-    it('has error on no handlers found', (done) => {
+    it('has error on no handlers found', () => {
 
         register({
             handlers: [
@@ -67,49 +71,57 @@ describe('handler loading', () => {
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+        }).catch((err) => {
 
             expect(err).to.exist();
 
-            return done();
         });
     });
 
-    it('has usable autoloaded handlers', (done) => {
+    it('has usable autoloaded handlers', () => {
 
         register({
             handlers: [
                 {
                     includes: [
-                        'test/handlers/**/*1Handler.js'
+                        'handlers/**/*1Handler.js'
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
 
-            server.route({
+            return server.route({
                 method: 'get',
                 path: '/test1',
-                handler: {
-                    sample1Handler: {}
+                options: {
+                    handler: {sample1Handler: {}}
                 }
             });
+        }).then((res) => {
 
-            server.inject({
+            expect(res).to.not.exist();
+
+            const options = {
                 method: 'get',
                 url: '/test1'
-            }, (res) => {
+            };
 
-                expect(res.statusCode).to.be.equal(200);
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
+            expect(res.statusCode).to.be.equal(200);
+
+        }).catch((err) => {
+            console.log(`Error File is ${err}`);
         });
     });
 
-    it('has usable autoloaded handlers using direct inject', (done) => {
+    it('has usable autoloaded handlers using direct inject', () => {
 
         register({
             handlers: [
@@ -117,107 +129,72 @@ describe('handler loading', () => {
                     includes: [
                         function sample1Handler() {
 
-                            return function (request, reply) {
+                            return function (request, h) {
 
-                                return reply('hello');
+                                return 'hello hapi :)';
                             };
                         }
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
 
-            server.route({
+            return server.route({
                 method: 'get',
-                path: '/test1',
-                handler: {
-                    sample1Handler: {}
+                path: '/test2',
+                options: {
+                    handler: {sample1Handler: {}}
                 }
             });
+        }).then((res) => {
 
-            server.inject({
+            expect(res).to.not.exist();
+
+            const options = {
                 method: 'get',
-                url: '/test1'
-            }, (res) => {
+                url: '/test2'
+            };
 
-                expect(res.statusCode).to.be.equal(200);
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
+            expect(res.statusCode).to.be.equal(200);
+
         });
     });
 
-    it('has usable handlers on routes', (done) => {
+    it('has usable handlers on routes', () => {
 
         register({
             routes: [
                 {
                     includes: [
-                        'test/routes/**/*3Route.js'
+                        'routes/**/*3Route.js'
                     ]
                 }
             ],
             handlers: [
                 {
                     includes: [
-                        'test/handlers/**/*1Handler.js'
+                        'handlers/**/*1Handler.js'
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((res) => {
+            expect(res).to.not.exist();
 
-            expect(err).to.not.exist();
-
-            server.inject({
+            const options = {
                 method: 'get',
                 url: '/test3'
-            }, (res) => {
+            };
 
-                expect(res.statusCode).to.be.equal(200);
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
-        });
-    });
+            expect(res.statusCode).to.be.equal(200);
 
-    it('has usable handlers on routes using direct inject', (done) => {
-
-        register({
-            routes: [
-                {
-                    includes: [
-                        'test/routes/**/*3Route.js'
-                    ]
-                }
-            ],
-            handlers: [
-                {
-                    includes: [
-                        function sample1Handler() {
-
-                            return function (request, reply) {
-
-                                return reply('hello');
-                            };
-                        }
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            server.inject({
-                method: 'get',
-                url: '/test3'
-            }, (res) => {
-
-                expect(res.statusCode).to.be.equal(200);
-
-                return done();
-            });
         });
     });
 });

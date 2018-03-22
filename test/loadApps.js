@@ -1,9 +1,9 @@
 'use strict';
 
-const Hapi = require('hapi');
+let Hapi = require('hapi');
+let Plugin = require('../');
 const Code = require('code');
 const Lab = require('lab');
-const Plugin = require('../');
 const Path = require('path');
 
 const expect = Code.expect;
@@ -17,7 +17,8 @@ describe('app loading', () => {
     let server;
 
     beforeEach(() => {
-
+        Hapi = require('hapi');
+        Plugin = require('../');
         server = new Hapi.Server({
             routes: {
                 files: {
