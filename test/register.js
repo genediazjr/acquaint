@@ -1,52 +1,55 @@
 'use strict';
 
-const Hapi = require('hapi');
+let Hapi = require('hapi');
+let Plugin = require('../');
 const Code = require('code');
 const Lab = require('lab');
-const Plugin = require('../');
+const Path = require('path');
 
 const expect = Code.expect;
 const lab = exports.lab = Lab.script();
-const beforeEach = lab.beforeEach;
 const describe = lab.describe;
 const it = lab.it;
 
+
 describe('registration', () => {
-
-    let server;
-
-    beforeEach((done) => {
-
-        server = new Hapi.Server();
-        server.connection();
-
-        return done();
-    });
-
-    const register = (options, next) => {
-
-        server.register({
-            register: Plugin,
-            options: options
-        }, (err) => {
-
-            return next(err);
+    const createHapiServerInstance = () => {
+        Hapi = require('hapi');
+        Plugin = require('../');
+        const hapiServer = new Hapi.Server({
+            routes: {
+                files: {
+                    relativeTo: `${Path.join(__dirname)}`
+                }
+            }
         });
+        return hapiServer;
     };
 
-    it('registers without routes, handlers or methods', (done) => {
+    const registerHapi = async (hapiServer, options) => {
+        // Load Plugins
+        return await hapiServer.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
+    };
 
-        register({}, (err) => {
+    it('registers without routes, handlers or methods', () => {
+        const server = createHapiServerInstance();
 
-            expect(err).to.not.exist();
+        registerHapi(server, {}).then((resolved) => {
 
-            return done();
+            expect(resolved).to.not.exist();
+
         });
     });
 
-    it('registers with custom working directory', (done) => {
+    it('registers with custom working directory', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             relativeTo: __dirname,
             routes: [
                 {
@@ -56,38 +59,37 @@ describe('registration', () => {
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
+            expect(server.table()).to.have.length(2);
 
-            expect(server.connections[0].table()).to.have.length(2);
-
-            return done();
         });
     });
 
-    it('has error on invalid syntax', (done) => {
+    it('has error on invalid syntax', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             methods: [
                 {
                     includes: () => {
                     }
                 }
             ]
-        }, (err) => {
+        }).catch((err) => {
 
             expect(err).to.exist();
 
-            return done();
         });
     });
 
-    it('will not load malformed methods using direct inject', (done) => {
+    it('will not load malformed methods using direct inject', () => {
+        const server = createHapiServerInstance();
 
         let counter = 0;
 
-        register({
+        registerHapi(server, {
             methods: [
                 {
                     prefix: 'sample1Method',
@@ -107,12 +109,11 @@ describe('registration', () => {
                     ]
                 }
             ]
-        }, (err) => {
+        }).catch((err) => {
 
             expect(err).to.exist();
             expect(err).to.match(/Unable to identify method name. Please refer to method loading API./i);
 
-            return done();
         });
     });
 });

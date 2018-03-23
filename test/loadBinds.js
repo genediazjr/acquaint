@@ -8,28 +8,26 @@ const Path = require('path');
 
 const expect = Code.expect;
 const lab = exports.lab = Lab.script();
-const beforeEach = lab.beforeEach;
 const describe = lab.describe;
 const it = lab.it;
 
 describe('bind loading', () => {
-    let server;
-
-    beforeEach(() => {
+    const createHapiServerInstance = () => {
         Hapi = require('hapi');
         Plugin = require('../');
-        server = new Hapi.Server({
+        const hapiServer = new Hapi.Server({
             routes: {
                 files: {
                     relativeTo: `${Path.join(__dirname)}`
                 }
             }
         });
-    });
+        return hapiServer;
+    };
 
-    const register = async (options) => {
+    const registerHapi = async (hapiServer, options) => {
         // Load Plugins
-        return await server.register([
+        return await hapiServer.register([
             {
                 plugin: Plugin,
                 options: options
@@ -38,8 +36,9 @@ describe('bind loading', () => {
     };
 
     it('exposes binds through the plugin', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             binds: [{ includes: [{ test: 'value1' }] }]
         }).then((resolved) => {
 
@@ -48,14 +47,15 @@ describe('bind loading', () => {
 
         }).catch((err) => {
 
-            expect(err).to.not.exist();
+            expect(err).to.exist();
 
         });
     });
 
     it('registers binds with inject object', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             binds: [{ includes: ['methods/**/*5Method.js'] }]
         }).then((resolved) => {
 
@@ -63,14 +63,15 @@ describe('bind loading', () => {
 
         }).catch((err) => {
 
-            expect(err).to.not.exist();
+            expect(err).to.exist();
 
         });
     });
 
     it('has error on no binds found', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             binds: [{ includes: ['does/not/*exist.js'] }]
         }).then((resolved) => {
 
@@ -84,8 +85,9 @@ describe('bind loading', () => {
     });
 
     it('has error on no name found', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             binds: [{
                 includes: [() => {
 
@@ -105,8 +107,9 @@ describe('bind loading', () => {
     });
 
     it('has usable autoloaded binds with included routes', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             binds: [{ includes: [{ test: 'value' }] }],
             routes: [{
                 includes: [{
@@ -129,7 +132,6 @@ describe('bind loading', () => {
 
             return server.inject(options);
         }).then((res) => {
-            console.log(res.result);
             expect(res.result).to.equal('value');
 
         }).catch((err) => {
@@ -138,8 +140,9 @@ describe('bind loading', () => {
     });
 
     it('uses name of function', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             binds: [{
                 includes: [function functionTest() {
 

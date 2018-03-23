@@ -8,31 +8,26 @@ const Path = require('path');
 
 const expect = Code.expect;
 const lab = exports.lab = Lab.script();
-const beforeEach = lab.beforeEach;
 const describe = lab.describe;
 const it = lab.it;
 
 describe('handler loading', () => {
-
-    let server;
-
-    beforeEach(() => {
-
+    const createHapiServerInstance = () => {
         Hapi = require('hapi');
         Plugin = require('../');
-
-        server = new Hapi.Server({
+        const hapiServer = new Hapi.Server({
             routes: {
                 files: {
                     relativeTo: `${Path.join(__dirname)}`
                 }
             }
         });
-    });
+        return hapiServer;
+    };
 
-    const register = async (options) => {
+    const registerHapi = async (hapiServer, options) => {
         // Load Plugins
-        return await server.register([
+        return await hapiServer.register([
             {
                 plugin: Plugin,
                 options: options
@@ -41,8 +36,9 @@ describe('handler loading', () => {
     };
 
     it('registers handlers with inject object', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             handlers: [
                 {
                     includes: [
@@ -58,12 +54,17 @@ describe('handler loading', () => {
         }).then((resolved) => {
 
             expect(resolved).to.not.exist();
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
     it('has error on no handlers found', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             handlers: [
                 {
                     includes: [
@@ -82,8 +83,9 @@ describe('handler loading', () => {
     });
 
     it('has usable autoloaded handlers', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             handlers: [
                 {
                     includes: [
@@ -117,19 +119,23 @@ describe('handler loading', () => {
             expect(res.statusCode).to.be.equal(200);
 
         }).catch((err) => {
-            console.log(`Error File is ${err}`);
+
+            expect(err).to.exist();
+
         });
     });
 
     it('has usable autoloaded handlers using direct inject', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             handlers: [
                 {
                     includes: [
                         function sample1Handler() {
 
-                            return function (request, h) {
+                            return function () {
+                                // (request, h) is the original function but since h is not in use in current  func, we will remove request and h
 
                                 return 'hello hapi :)';
                             };
@@ -166,8 +172,9 @@ describe('handler loading', () => {
     });
 
     it('has usable handlers on routes', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             routes: [
                 {
                     includes: [
@@ -194,6 +201,10 @@ describe('handler loading', () => {
         }).then((res) => {
 
             expect(res.statusCode).to.be.equal(200);
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
 
         });
     });

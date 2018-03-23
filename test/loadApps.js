@@ -8,29 +8,27 @@ const Path = require('path');
 
 const expect = Code.expect;
 const lab = exports.lab = Lab.script();
-const beforeEach = lab.beforeEach;
 const describe = lab.describe;
 const it = lab.it;
 
 describe('app loading', () => {
 
-    let server;
-
-    beforeEach(() => {
+    const createHapiServerInstance = () => {
         Hapi = require('hapi');
         Plugin = require('../');
-        server = new Hapi.Server({
+        const hapiServer = new Hapi.Server({
             routes: {
                 files: {
                     relativeTo: `${Path.join(__dirname)}`
                 }
             }
         });
-    });
+        return hapiServer;
+    };
 
-    const register = async (options) => {
+    const registerHapi = async (hapiServer, options) => {
         // Load Plugins
-        return await server.register([
+        return await hapiServer.register([
             {
                 plugin: Plugin,
                 options: options
@@ -39,8 +37,9 @@ describe('app loading', () => {
     };
 
     it('exposes apps through the plugin', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             apps: [{ includes: [{ foo: 'bar' }] }]
         }).then((resolved) => {
 
@@ -55,8 +54,9 @@ describe('app loading', () => {
     });
 
     it('registers apps with inject object', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             apps: [{ includes: ['apps/*App.js'] }]
         }).then((resolved) => {
 
@@ -64,14 +64,16 @@ describe('app loading', () => {
 
         }).catch((err) => {
 
-            expect(err).to.not.exist();
+            expect(err).to.exist();
+
 
         });
     });
 
     it('has error on no apps found', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             apps: [{ includes: ['does/not/*exist.js'] }]
         }).catch((err) => {
 
@@ -81,8 +83,9 @@ describe('app loading', () => {
     });
 
     it('has error on no name found', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             apps: [{
                 includes: [() => {
 
@@ -92,14 +95,15 @@ describe('app loading', () => {
         }).catch((err) => {
 
             expect(err).to.exist();
-            expect(err).to.match(/Unable to identify the app name. Please refer to app loading api./i);
+            expect(err).to.equal('Unable to identify the app name. Please refer to app loading api.');
 
         });
     });
 
     it('has usable direct inject apps', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             apps: [{ includes: [{ foo: 'bar' }] }]
         }).then((resolved) => {
 
@@ -110,8 +114,9 @@ describe('app loading', () => {
     });
 
     it('has apps usable on handlers', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             apps: [{ includes: [{ foo: 'bar' }] }]
         }).then((resolved) => {
 
@@ -121,7 +126,9 @@ describe('app loading', () => {
                 method: 'get',
                 path: '/',
                 options: {
-                    handler: function (request, h) {
+                    handler: function (request) {
+
+                        // (request, h) is the original function but since h is not in use in current  func, we will remove h
 
                         return request.server.app.foo;
                     }
@@ -143,8 +150,9 @@ describe('app loading', () => {
     });
 
     it('has apps usable on external handlers with depricated server.handler', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             apps: [{ includes: [{ foo: 'bar' }] }]
         }).then((resolved) => {
 
@@ -152,7 +160,8 @@ describe('app loading', () => {
 
             server.handler('someHandler', () => {
 
-                return (request, h) => {
+                return (request) => {
+                    // (request, h) is the original function but since h is not in use in current  func, we will remove h
 
                     return request.server.app.foo;
                 };
@@ -185,8 +194,9 @@ describe('app loading', () => {
     });
 
     it('has apps usable on external handlers with new server.decorate', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             apps: [{ includes: [{ foo: 'bar' }] }]
         }).then((resolved) => {
 
@@ -194,7 +204,8 @@ describe('app loading', () => {
 
             server.decorate('handler', 'someHandler', () => {
 
-                return (request, h) => {
+                return (request) => {
+                    // (request, h) is the original function but since h is not in use in current  func, we will remove h
 
                     return request.server.app.foo;
                 };
@@ -221,8 +232,9 @@ describe('app loading', () => {
     });
 
     it('uses name of function', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             apps: [{
                 includes: [function foo() {
 
@@ -242,8 +254,9 @@ describe('app loading', () => {
     });
 
     it('has usable autoloaded apps', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             apps: [{ includes: ['apps/*App.js'] }]
         }).then((resolved) => {
 
@@ -253,7 +266,7 @@ describe('app loading', () => {
 
         }).catch((err) => {
 
-            expect(err).to.not.exist();
+            expect(err).to.exist();
         });
     });
 });

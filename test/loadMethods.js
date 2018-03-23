@@ -8,7 +8,6 @@ const Path = require('path');
 
 const expect = Code.expect;
 const lab = exports.lab = Lab.script();
-const beforeEach = lab.beforeEach;
 const describe = lab.describe;
 const it = lab.it;
 
@@ -25,7 +24,7 @@ describe('method loading', () => {
             }
         });
         return hapiServer;
-    }
+    };
 
     const registerHapi = async (hapiServer, options) => {
         // Load Plugins
@@ -56,6 +55,10 @@ describe('method loading', () => {
         }).then((resolved) => {
 
             expect(resolved).to.not.exist();
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
 
         });
     });
@@ -94,6 +97,10 @@ describe('method loading', () => {
             expect(resolved).to.not.exist();
             expect(hapiServer.methods.sample1Method.square).to.exist();
             expect(hapiServer.methods.sample1Method.thisWillBeNotRegistered).to.not.exist();
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
 
         });
     });
@@ -153,7 +160,12 @@ describe('method loading', () => {
                     expect(res, 'decrement').to.equal(-1);
 
                 });
+
             }, 1000);
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
 
         });
     });
@@ -212,7 +224,6 @@ describe('method loading', () => {
         }).then(() => {
 
             return hapiServer.initialize();
-
         }).then((resolved) => {
 
             expect(resolved).to.not.exist();
@@ -238,6 +249,10 @@ describe('method loading', () => {
                     expect(res, 'decrement').to.equal(1);
                 });
             }, 1000);
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
 
         });
     });
@@ -294,6 +309,10 @@ describe('method loading', () => {
             expect(parseInt(res.payload)).to.be.equal(hapiServer.methods.sample1Method.square(testValue));
             expect(parseInt(res.result)).to.be.equal(hapiServer.methods.sample1Method.square(testValue));
 
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
@@ -315,7 +334,13 @@ describe('method loading', () => {
             const testValueX = 5;
             const testValueY = 3;
 
-            expect(hapiServer.methods.sample2Method.add(testValueX, testValueY)).to.be.equal(hapiServer.methods.sample3Method.useAdd(testValueX, testValueY));
+            expect(hapiServer.methods.sample2Method.add(testValueX, testValueY))
+                .to.be.equal(hapiServer.methods.sample3Method.useAdd(testValueX, testValueY));
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
@@ -350,7 +375,13 @@ describe('method loading', () => {
             const testValueX = 5;
             const testValueY = 3;
 
-            expect(hapiServer.methods.sample2Method.add(testValueX, testValueY)).to.be.equal(hapiServer.methods.sample3Method.useAdd(testValueX, testValueY));
+            expect(hapiServer.methods.sample2Method.add(testValueX, testValueY))
+                .to.be.equal(hapiServer.methods.sample3Method.useAdd(testValueX, testValueY));
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
@@ -383,6 +414,10 @@ describe('method loading', () => {
             expect(hapiServer.methods.sub.sample2Method.multiply(2, 3), 'multiply').to.equal(6);
             expect(hapiServer.methods.sub.sample3Method.useAdd(1, 2), 'useAdd').to.equal(3);
 
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
@@ -411,7 +446,12 @@ describe('method loading', () => {
             const testValueX = 5;
             const testValueY = 3;
 
-            expect(hapiServer.methods.main.sample2Method.add(testValueX, testValueY)).to.be.equal(hapiServer.methods.sub.sample4Method.useAdd(testValueX, testValueY));
+            expect(hapiServer.methods.main.sample2Method.add(testValueX, testValueY))
+                .to.be.equal(hapiServer.methods.sub.sample4Method.useAdd(testValueX, testValueY));
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
 
         });
     });
@@ -432,6 +472,10 @@ describe('method loading', () => {
             expect(resolved).to.not.exist();
 
             expect(hapiServer.methods.sample5Method(5, 3), 'subtract').to.equal(2);
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
 
         });
     });
@@ -457,6 +501,10 @@ describe('method loading', () => {
                     counter: 2
                 });
             });
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
@@ -505,13 +553,15 @@ describe('method loading', () => {
                 });
 
             }, 1);
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
     it('has usable function exporting methods with prefix', () => {
         const hapiServer = createHapiServerInstance();
-
-        let counter = 1;
 
         registerHapi(hapiServer, {
             methods: [
@@ -527,6 +577,11 @@ describe('method loading', () => {
             expect(resolved).to.not.exist();
 
             expect(hapiServer.methods.major.sample5Method(5, 3), 'subtract').to.equal(2);
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
@@ -550,6 +605,10 @@ describe('method loading', () => {
             expect(resolved).to.not.exist();
 
             expect(hapiServer.methods.major.sample5Method(5, 3), 'subtract').to.equal(2);
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
@@ -570,12 +629,17 @@ describe('method loading', () => {
             expect(resolved).to.not.exist();
 
             expect(hapiServer.methods.minor.sample6Method(8).then((res) => {
+
                 expect(res).to.equal({
                     addToSelf: 16,
                     counter: 3
                 });
 
             }));
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
@@ -605,12 +669,15 @@ describe('method loading', () => {
         }).then((resolved) => {
 
             expect(resolved).to.not.exist();
-
-            expect(hapiServer.methods.minor.sample6MethodX(8).then((res) => {
+            hapiServer.methods.minor.sample6MethodX(8).then((res) => {
 
                 expect(res).to.equal(16);
 
-            }));
+            });
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
@@ -643,14 +710,21 @@ describe('method loading', () => {
             hapiServer.methods.sample7Method().then((res) => {
 
                 expect(res).to.equal(-1);
+
             });
 
             setTimeout(() => {
+
                 hapiServer.methods.sample7Method().then((res) => {
 
                     expect(res).to.equal(-1);
                 });
+
             }, 1000);
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
@@ -690,7 +764,6 @@ describe('method loading', () => {
         }).then(() => {
 
             return hapiServer.initialize();
-
         }).then((resolved) => {
 
             expect(resolved).to.not.exist();
@@ -698,6 +771,7 @@ describe('method loading', () => {
             hapiServer.methods.cached.sample7Method().then((res) => {
 
                 expect(res).to.equal(-1);
+
             });
 
             expect(hapiServer.methods.noncached.sample7Method()).to.equal(-1);
@@ -715,7 +789,12 @@ describe('method loading', () => {
                     expect(res).to.equal(-2);
 
                 });
+
             }, 1000);
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
@@ -750,6 +829,10 @@ describe('method loading', () => {
 
             expect(hapiServer.methods.nobind.sample8Method(5)).to.equal(5);
             expect(hapiServer.methods.withbind.sample8Method(5)).to.equal('5test');
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
 
         });
     });
@@ -788,6 +871,7 @@ describe('method loading', () => {
                             };
 
                             if (this && typeof this.operation === 'function') {
+
                                 operation = this.operation;
                             }
 
@@ -809,6 +893,10 @@ describe('method loading', () => {
 
             expect(hapiServer.methods.nobind.sample8Method(5)).to.equal(5);
             expect(hapiServer.methods.withbind.sample8Method(5)).to.equal('5test');
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
 
         });
     });
@@ -840,13 +928,13 @@ describe('method loading', () => {
                 }
             ]
         }).then(() => {
-            return hapiServer.initialize();
 
+            return hapiServer.initialize();
         }).then((res) => {
+
             expect(res).to.not.exist();
 
             expect(hapiServer.methods.sample9Method.sample8Method('thats')).to.equal('thatssomevalue');
-
 
             hapiServer.methods.sample9Method.sample6Method(1).then((res) => {
 
@@ -895,7 +983,12 @@ describe('method loading', () => {
                     expect(res).to.equal(-4);
 
                 });
-            },1000);
+
+            }, 1000);
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
 
         });
     });
@@ -921,6 +1014,7 @@ describe('method loading', () => {
 
             return hapiServer.initialize();
         }).then((res) => {
+
             expect(res).to.not.exist();
 
             hapiServer.methods.sample6Method(3).then((res) => {
@@ -943,6 +1037,10 @@ describe('method loading', () => {
                 });
 
             }, 1000);
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
 
         });
     });
@@ -989,6 +1087,10 @@ describe('method loading', () => {
                 expect(hapiServer.methods.sample1Method.decrement()).to.equal(2);
 
             }, 1000);
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
 
         });
     });
@@ -1037,6 +1139,10 @@ describe('method loading', () => {
                 expect(thirdValue).to.equal(2);
 
             });
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
 
         });
     });
@@ -1111,6 +1217,10 @@ describe('method loading', () => {
                 expect(thirdValue).to.equal(4);
 
             });
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
 
         });
     });

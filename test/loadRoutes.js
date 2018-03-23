@@ -1,67 +1,76 @@
 'use strict';
 
-const Hapi = require('hapi');
+let Hapi = require('hapi');
+let Plugin = require('../');
 const Code = require('code');
 const Lab = require('lab');
-const Plugin = require('../');
+const Path = require('path');
 
 const expect = Code.expect;
 const lab = exports.lab = Lab.script();
-const beforeEach = lab.beforeEach;
 const describe = lab.describe;
 const it = lab.it;
 
-describe('route loading', () => {
-
-    let server;
-
-    beforeEach((done) => {
-
-        server = new Hapi.Server();
-        server.connection();
-
-        return done();
-    });
-
-    const register = (options, next) => {
-
-        server.register({
-            register: Plugin,
-            options: options
-        }, (err) => {
-
-            return next(err);
+describe('routes loading', () => {
+    const createHapiServerInstance = () => {
+        Hapi = require('hapi');
+        Plugin = require('../');
+        const hapiServer = new Hapi.Server({
+            routes: {
+                files: {
+                    relativeTo: `${Path.join(__dirname)}`
+                }
+            }
         });
+        return hapiServer;
     };
 
-    it('registers routes with inject object', (done) => {
+    const registerHapi = async (hapiServer, options) => {
+        // Load Plugins
+        return await hapiServer.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
+    };
 
-        register({
+    it('registers routes with inject object', () => {
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
             routes: [
                 {
                     includes: [
-                        'test/routes/**/*1Route.js'
+                        'routes/**/*1Route.js'
                     ]
                 },
                 {
                     includes: [
-                        'test/routes/**/*2Route.js'
+                        'routes/**/*2Route.js'
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
+            expect(resolved).to.not.exist();
 
-            expect(err).to.not.exist();
+            return server.initialize();
+        }).then((resolved) => {
 
-            expect(server.connections[0].table()).to.have.length(2);
+            expect(resolved).to.not.exist();
+            expect(server.table()).to.have.length(2);
 
-            return done();
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
-    it('has error on no routes found', (done) => {
+    it('has error on no routes found', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             routes: [
                 {
                     includes: [
@@ -69,70 +78,84 @@ describe('route loading', () => {
                     ]
                 }
             ]
-        }, (err) => {
+        }).catch((err) => {
 
             expect(err).to.exist();
+            expect(err).to.equal('Unable to retrieve files from pattern: does/not/*exist.js');
 
-            return done();
         });
     });
 
-    it('has usable autoloaded routes', (done) => {
+    it('has usable autoloaded routes', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             routes: [
                 {
                     includes: [
-                        'test/routes/**/*1Route.js'
+                        'routes/**/*1Route.js'
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((res) => {
 
-            expect(err).to.not.exist();
+            expect(res).not.to.exist();
 
-            server.inject({
+            const options = {
                 method: 'get',
                 url: '/test1'
-            }, (res) => {
+            };
 
-                expect(res.statusCode).to.be.equal(200);
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
+            expect(res).to.exist();
+            expect(res.statusCode).to.be.equal(200);
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
-    it('has usable autoloaded routes using direct inject', (done) => {
+    it('has usable autoloaded routes using direct inject', () => {
+        const server = createHapiServerInstance();
 
-        register({
+        registerHapi(server, {
             routes: [
                 {
                     includes: [
                         {
                             path: '/test1',
                             method: 'GET',
-                            handler: function (request, reply) {
+                            handler: function () {
+                                // (request, h) is the original function but since h is not in use in current  func, we will remove request and  h
 
-                                return reply('hello');
+                                return 'hello';
                             }
                         }
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((res) => {
 
-            expect(err).to.not.exist();
+            expect(res).not.to.exist();
 
-            server.inject({
+            const options = {
                 method: 'get',
                 url: '/test1'
-            }, (res) => {
+            };
 
-                expect(res.statusCode).to.be.equal(200);
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
+            expect(res).to.exist();
+            expect(res.statusCode).to.be.equal(200);
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 });

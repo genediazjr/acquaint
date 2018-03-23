@@ -3,9 +3,6 @@
 let counter = 0;
 let someCounter = 0;
 
-
-
-
 exports.square = (x) => {
 
     return x * x;

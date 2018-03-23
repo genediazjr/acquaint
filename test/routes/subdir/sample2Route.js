@@ -4,9 +4,11 @@ module.exports = [
     {
         path: '/test2',
         method: 'GET',
-        handler: function (request, reply) {
-
-            return reply('hello');
+        options: {
+            handler: () => {
+                // (request, h) is the original function but since h is not in use in current  func, we will remove request and h
+                return 'hello';
+            }
         }
     }
 ];

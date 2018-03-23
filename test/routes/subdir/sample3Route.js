@@ -4,8 +4,10 @@ module.exports = [
     {
         path: '/test3',
         method: 'GET',
-        handler: {
-            sample1Handler: {}
+        options: {
+            handler: {
+                sample1Handler: {}
+            }
         }
     }
 ];
