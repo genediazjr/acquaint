@@ -27,7 +27,7 @@
   "dependencies": {
     "joi": "13.1.x",
     "glob": "7.1.x",
-    "async": "2.1.x"
+    "async": "2.6.x"
   },
   "devDependencies": {
     "code": "5.2.x",
