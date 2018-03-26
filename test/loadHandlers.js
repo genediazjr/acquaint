@@ -12,30 +12,31 @@ const describe = lab.describe;
 const it = lab.it;
 
 describe('handler loading', () => {
+
     const createHapiServerInstance = () => {
+
         Hapi = require('hapi');
         Plugin = require('../');
-        const hapiServer = new Hapi.Server({
+
+        return new Hapi.Server({
             routes: {
                 files: {
                     relativeTo: `${Path.join(__dirname)}`
                 }
             }
         });
-        return hapiServer;
     };
 
     const registerHapi = async (hapiServer, options) => {
-        // Load Plugins
-        return await hapiServer.register([
-            {
-                plugin: Plugin,
-                options: options
-            }
-        ]);
+
+        return await hapiServer.register([{
+            plugin: Plugin,
+            options: options
+        }]);
     };
 
     it('registers handlers with inject object', () => {
+
         const server = createHapiServerInstance();
 
         registerHapi(server, {
@@ -54,6 +55,7 @@ describe('handler loading', () => {
         }).then((resolved) => {
 
             expect(resolved).to.not.exist();
+
         }).catch((err) => {
 
             expect(err).to.exist();
@@ -62,9 +64,11 @@ describe('handler loading', () => {
     });
 
     it('has error on no handlers found', () => {
+
         const server = createHapiServerInstance();
 
         registerHapi(server, {
+            relativeTo: __dirname,
             handlers: [
                 {
                     includes: [
@@ -75,6 +79,7 @@ describe('handler loading', () => {
         }).then((resolved) => {
 
             expect(resolved).to.not.exist();
+
         }).catch((err) => {
 
             expect(err).to.exist();
@@ -83,9 +88,11 @@ describe('handler loading', () => {
     });
 
     it('has usable autoloaded handlers', () => {
+
         const server = createHapiServerInstance();
 
         registerHapi(server, {
+            relativeTo: __dirname,
             handlers: [
                 {
                     includes: [
@@ -126,9 +133,11 @@ describe('handler loading', () => {
     });
 
     it('has usable autoloaded handlers using direct inject', () => {
+
         const server = createHapiServerInstance();
 
         registerHapi(server, {
+            relativeTo: __dirname,
             handlers: [
                 {
                     includes: [
@@ -136,7 +145,6 @@ describe('handler loading', () => {
 
                             return function () {
                                 // (request, h) is the original function but since h is not in use in current  func, we will remove request and h
-
                                 return 'hello hapi :)';
                             };
                         }
@@ -172,9 +180,11 @@ describe('handler loading', () => {
     });
 
     it('has usable handlers on routes', () => {
+
         const server = createHapiServerInstance();
 
         registerHapi(server, {
+            relativeTo: __dirname,
             routes: [
                 {
                     includes: [
@@ -190,6 +200,7 @@ describe('handler loading', () => {
                 }
             ]
         }).then((res) => {
+
             expect(res).to.not.exist();
 
             const options = {

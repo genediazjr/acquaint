@@ -32,7 +32,7 @@
   "devDependencies": {
     "code": "5.2.x",
     "coveralls": "3.0.x",
-    "hapi": "17.2.3",
+    "hapi": "17.2.x",
     "lab": "15.4.x"
   }
 }

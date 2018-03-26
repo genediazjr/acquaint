@@ -12,33 +12,54 @@ const describe = lab.describe;
 const it = lab.it;
 
 describe('bind loading', () => {
+
     const createHapiServerInstance = () => {
+
         Hapi = require('hapi');
         Plugin = require('../');
-        const hapiServer = new Hapi.Server({
+
+        return new Hapi.Server({
             routes: {
                 files: {
                     relativeTo: `${Path.join(__dirname)}`
                 }
             }
         });
-        return hapiServer;
     };
 
     const registerHapi = async (hapiServer, options) => {
-        // Load Plugins
-        return await hapiServer.register([
-            {
-                plugin: Plugin,
-                options: options
-            }
-        ]);
+
+        return await hapiServer.register([{
+            plugin: Plugin,
+            options: options
+        }]);
     };
 
     it('exposes binds through the plugin', () => {
+
         const server = createHapiServerInstance();
 
         registerHapi(server, {
+            relativeTo: __dirname,
+            binds: [{ includes: [{ test: 'value1' }] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+            expect(Plugin.binds).to.equal({ test: 'value1' });
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
+        });
+    });
+
+    it('exposes binds through the plugin', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
             binds: [{ includes: [{ test: 'value1' }] }]
         }).then((resolved) => {
 
@@ -53,9 +74,11 @@ describe('bind loading', () => {
     });
 
     it('registers binds with inject object', () => {
+
         const server = createHapiServerInstance();
 
         registerHapi(server, {
+            relativeTo: __dirname,
             binds: [{ includes: ['methods/**/*5Method.js'] }]
         }).then((resolved) => {
 
@@ -69,9 +92,11 @@ describe('bind loading', () => {
     });
 
     it('has error on no binds found', () => {
+
         const server = createHapiServerInstance();
 
         registerHapi(server, {
+            relativeTo: __dirname,
             binds: [{ includes: ['does/not/*exist.js'] }]
         }).then((resolved) => {
 
@@ -85,9 +110,11 @@ describe('bind loading', () => {
     });
 
     it('has error on no name found', () => {
+
         const server = createHapiServerInstance();
 
         registerHapi(server, {
+            relativeTo: __dirname,
             binds: [{
                 includes: [() => {
 
@@ -107,9 +134,11 @@ describe('bind loading', () => {
     });
 
     it('has usable autoloaded binds with included routes', () => {
+
         const server = createHapiServerInstance();
 
         registerHapi(server, {
+            relativeTo: __dirname,
             binds: [{ includes: [{ test: 'value' }] }],
             routes: [{
                 includes: [{
@@ -117,12 +146,14 @@ describe('bind loading', () => {
                     path: '/',
                     options: {
                         handler: (request, h) => {
+
                             return h.realm.settings.bind.test;
                         }
                     }
                 }]
             }]
         }).then((resolved) => {
+
             expect(resolved).to.not.exist();
 
             const options = {
@@ -132,17 +163,22 @@ describe('bind loading', () => {
 
             return server.inject(options);
         }).then((res) => {
+
             expect(res.result).to.equal('value');
 
         }).catch((err) => {
+
             expect(err).to.exist();
+
         });
     });
 
     it('uses name of function', () => {
+
         const server = createHapiServerInstance();
 
         registerHapi(server, {
+            relativeTo: __dirname,
             binds: [{
                 includes: [function functionTest() {
 
@@ -172,11 +208,13 @@ describe('bind loading', () => {
 
             return server.inject(options);
         }).then((res) => {
+
             expect(res.result).to.equal('bar');
 
         }).catch((err) => {
 
             expect(err).to.exist();
+
         });
     });
 });

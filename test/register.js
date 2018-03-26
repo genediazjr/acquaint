@@ -13,30 +13,31 @@ const it = lab.it;
 
 
 describe('registration', () => {
+
     const createHapiServerInstance = () => {
+
         Hapi = require('hapi');
         Plugin = require('../');
-        const hapiServer = new Hapi.Server({
+
+        return new Hapi.Server({
             routes: {
                 files: {
                     relativeTo: `${Path.join(__dirname)}`
                 }
             }
         });
-        return hapiServer;
     };
 
     const registerHapi = async (hapiServer, options) => {
         // Load Plugins
-        return await hapiServer.register([
-            {
-                plugin: Plugin,
-                options: options
-            }
-        ]);
+        return await hapiServer.register([{
+            plugin: Plugin,
+            options: options
+        }]);
     };
 
     it('registers without routes, handlers or methods', () => {
+
         const server = createHapiServerInstance();
 
         registerHapi(server, {}).then((resolved) => {
@@ -47,6 +48,7 @@ describe('registration', () => {
     });
 
     it('registers with custom working directory', () => {
+
         const server = createHapiServerInstance();
 
         registerHapi(server, {
@@ -68,15 +70,14 @@ describe('registration', () => {
     });
 
     it('has error on invalid syntax', () => {
+
         const server = createHapiServerInstance();
 
         registerHapi(server, {
-            methods: [
-                {
-                    includes: () => {
-                    }
-                }
-            ]
+            relativeTo: __dirname,
+            methods: [{
+                includes: () => { }
+            }]
         }).catch((err) => {
 
             expect(err).to.exist();
@@ -90,6 +91,7 @@ describe('registration', () => {
         let counter = 0;
 
         registerHapi(server, {
+            relativeTo: __dirname,
             methods: [
                 {
                     prefix: 'sample1Method',

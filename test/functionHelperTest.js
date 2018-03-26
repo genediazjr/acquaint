@@ -21,12 +21,15 @@ describe('Function Helper helps', () => {
             lastName: 'Doe'
         }
     ];
-
+    // 47/356)
     it('execute and collect each function Helper', () => {
         return FunctionHelper.executeAndCollectEach(userData, (item) => {
+
             return item.name;
         }).then((resolve) => {
+
             expect(resolve.length).to.equal(2);
+
         });
     });
 
@@ -40,7 +43,9 @@ describe('Function Helper helps', () => {
 
             return item.name;
         }).then((resolve) => {
+
             expect(resolve.length).to.equal(3);
+
         });
     });
 
@@ -54,7 +59,9 @@ describe('Function Helper helps', () => {
 
             return item.name;
         }).then((resolve) => {
-            expect(resolve.length).not.to.exist();
+
+            expect(resolve).not.to.exist();
+
         });
     });
 });
