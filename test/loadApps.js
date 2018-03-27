@@ -29,10 +29,12 @@ describe('app loading', () => {
 
     const registerHapi = async (hapiServer, options) => {
 
-        return await hapiServer.register([{
-            plugin: Plugin,
-            options: options
-        }]);
+        return await hapiServer.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
     };
 
     it('exposes apps through the plugin', () => {
@@ -41,16 +43,14 @@ describe('app loading', () => {
 
         registerHapi(server, {
             relativeTo: __dirname,
-            apps: [{ includes: [{ foo: 'bar' }] }]
+            apps: [{includes: [{ foo: 'bar' }] }]
         }).then((resolved) => {
 
             expect(resolved).to.not.exist();
             expect(Plugin.apps).to.equal({ foo: 'bar' });
-
         }).catch((err) => {
 
             expect(err).to.not.exist();
-
         });
     });
 
@@ -64,7 +64,6 @@ describe('app loading', () => {
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -78,11 +77,9 @@ describe('app loading', () => {
         }).then((resolved) => {
 
             expect(resolved).to.not.exist();
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -96,11 +93,9 @@ describe('app loading', () => {
         }).then((resolved) => {
 
             expect(resolved).to.not.exist();
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -114,7 +109,6 @@ describe('app loading', () => {
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -134,7 +128,6 @@ describe('app loading', () => {
 
             expect(err).to.exist();
             expect(err).to.equal('Unable to identify the app name. Please refer to app loading api.');
-
         });
     });
     it('has error on no name found, has apps usable on external handlers with new server.decorate', () => {
@@ -187,11 +180,9 @@ describe('app loading', () => {
         }).then((res) => {
 
             expect(res.result).to.equal('bar');
-
         }).catch((err) => {
 
             expect(err).to.equal('Unable to identify the app name. Please refer to app loading api.');
-
         });
     });
 
@@ -206,7 +197,6 @@ describe('app loading', () => {
 
             expect(resolved).to.not.exist();
             expect(server.app.foo).to.equal('bar');
-
         });
     });
 
@@ -226,9 +216,7 @@ describe('app loading', () => {
                 path: '/',
                 options: {
                     handler: function (request) {
-
                         // (request, h) is the original function but since h is not in use in current  func, we will remove h
-
                         return request.server.app.foo;
                     }
                 }
@@ -244,11 +232,10 @@ describe('app loading', () => {
         }).then((res) => {
 
             expect(res.result).to.equal('bar');
-
         });
     });
 
-    it('has apps usable on external handlers with depricated server.handler', () => {
+    it('has apps usable on external handlers with deprecated server.handler', () => {
 
         const server = createHapiServerInstance();
 
@@ -289,7 +276,6 @@ describe('app loading', () => {
 
             expect(error).to.exist();
             expect(error.message).to.contains('server.handler is not a function');
-
         });
     });
 
@@ -308,7 +294,6 @@ describe('app loading', () => {
 
                 return (request) => {
                     // (request, h) is the original function but since h is not in use in current  func, we will remove h
-
                     return request.server.app.foo;
                 };
             });
@@ -317,7 +302,7 @@ describe('app loading', () => {
                 method: 'get',
                 path: '/',
                 options: {
-                    handler: {someHandler: {}}
+                    handler: { someHandler: {} }
                 }
             });
         }).then(() => {

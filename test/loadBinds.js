@@ -29,10 +29,12 @@ describe('bind loading', () => {
 
     const registerHapi = async (hapiServer, options) => {
 
-        return await hapiServer.register([{
-            plugin: Plugin,
-            options: options
-        }]);
+        return await hapiServer.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
     };
 
     it('exposes binds through the plugin', () => {

@@ -23,17 +23,18 @@ describe('Function Helper helps', () => {
     ];
     // 47/356)
     it('execute and collect each function Helper', () => {
+
         return FunctionHelper.executeAndCollectEach(userData, (item) => {
 
             return item.name;
         }).then((resolve) => {
 
             expect(resolve.length).to.equal(2);
-
         });
     });
 
     it('execute and collect each function Helper, onde of the item will return list', () => {
+
         return FunctionHelper.executeAndCollectEach(userData, (item) => {
 
             if (item.name === 'Andrew') {
@@ -45,11 +46,11 @@ describe('Function Helper helps', () => {
         }).then((resolve) => {
 
             expect(resolve.length).to.equal(3);
-
         });
     });
 
     it('execute and collect empty list ', () => {
+
         return FunctionHelper.executeAndCollectEach(null, (item) => {
 
             if (item.name === 'Andrew') {
@@ -61,7 +62,6 @@ describe('Function Helper helps', () => {
         }).then((resolve) => {
 
             expect(resolve).not.to.exist();
-
         });
     });
 });

@@ -29,10 +29,12 @@ describe('handler loading', () => {
 
     const registerHapi = async (hapiServer, options) => {
 
-        return await hapiServer.register([{
-            plugin: Plugin,
-            options: options
-        }]);
+        return await hapiServer.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
     };
 
     it('registers handlers with inject object', () => {
@@ -55,11 +57,9 @@ describe('handler loading', () => {
         }).then((resolved) => {
 
             expect(resolved).to.not.exist();
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -79,11 +79,9 @@ describe('handler loading', () => {
         }).then((resolved) => {
 
             expect(resolved).to.not.exist();
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -95,9 +93,7 @@ describe('handler loading', () => {
             relativeTo: __dirname,
             handlers: [
                 {
-                    includes: [
-                        'handlers/**/*1Handler.js'
-                    ]
+                    includes: ['handlers/**/*1Handler.js']
                 }
             ]
         }).then((resolved) => {
@@ -108,7 +104,7 @@ describe('handler loading', () => {
                 method: 'get',
                 path: '/test1',
                 options: {
-                    handler: {sample1Handler: {}}
+                    handler: { sample1Handler: {} }
                 }
             });
         }).then((res) => {
@@ -124,11 +120,9 @@ describe('handler loading', () => {
         }).then((res) => {
 
             expect(res.statusCode).to.be.equal(200);
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -159,7 +153,7 @@ describe('handler loading', () => {
                 method: 'get',
                 path: '/test2',
                 options: {
-                    handler: {sample1Handler: {}}
+                    handler: { sample1Handler: {} }
                 }
             });
         }).then((res) => {
@@ -175,7 +169,6 @@ describe('handler loading', () => {
         }).then((res) => {
 
             expect(res.statusCode).to.be.equal(200);
-
         });
     });
 
@@ -212,11 +205,9 @@ describe('handler loading', () => {
         }).then((res) => {
 
             expect(res.statusCode).to.be.equal(200);
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 });

@@ -29,11 +29,13 @@ describe('registration', () => {
     };
 
     const registerHapi = async (hapiServer, options) => {
-        // Load Plugins
-        return await hapiServer.register([{
-            plugin: Plugin,
-            options: options
-        }]);
+
+        return await hapiServer.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
     };
 
     it('registers without routes, handlers or methods', () => {
@@ -43,7 +45,6 @@ describe('registration', () => {
         registerHapi(server, {}).then((resolved) => {
 
             expect(resolved).to.not.exist();
-
         });
     });
 
@@ -65,7 +66,6 @@ describe('registration', () => {
 
             expect(resolved).to.not.exist();
             expect(server.table()).to.have.length(2);
-
         });
     });
 
@@ -81,7 +81,6 @@ describe('registration', () => {
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -115,7 +114,6 @@ describe('registration', () => {
 
             expect(err).to.exist();
             expect(err).to.match(/Unable to identify method name. Please refer to method loading API./i);
-
         });
     });
 });

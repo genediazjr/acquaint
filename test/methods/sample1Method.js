@@ -14,6 +14,7 @@ exports.isEven = (n) => {
     return n % 2 === 0;
 };
 
+
 /**
  * @type {{options: {cache: {expiresIn: number, generateTimeout: number}}, method: function()}}
  * since the option contain cache, it will automatically return promise, not directly the value it self.
@@ -31,6 +32,7 @@ exports.increment = {
         return ++counter;
     }
 };
+
 
 /**
  * @type {{options: {cache: {expiresIn: number, generateTimeout: number}, bind: {decrement: function()}}, method: exports.decrement.method}}
@@ -56,6 +58,7 @@ exports.decrement = {
     }
 };
 
+
 /**
  * @type {{options: {cache: {expiresIn: number, generateTimeout: number}, bind: {divide: function(*, *)}}, method: exports.divide.method}}
  * since the option contain cache, it will automatically return promise, not directly the value it self.
@@ -79,6 +82,7 @@ exports.divide = {
         return this.divide(a, b);
     }
 };
+
 
 /**
  * @type {{options: {cache: {expiresIn: number, generateTimeout: number}}, something: function(*)}}

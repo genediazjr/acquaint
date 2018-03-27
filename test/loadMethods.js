@@ -27,10 +27,12 @@ describe('method loading', () => {
 
     const registerHapi = async (hapiServer, options) => {
 
-        return await hapiServer.register([{
-            plugin: Plugin,
-            options: options
-        }]);
+        return await hapiServer.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
     };
 
     it('registers methods with inject object', () => {
@@ -41,24 +43,18 @@ describe('method loading', () => {
             relativeTo: __dirname,
             methods: [
                 {
-                    includes: [
-                        'methods/**/*1Method.js'
-                    ]
+                    includes: ['methods/**/*1Method.js']
                 },
                 {
-                    includes: [
-                        'methods/**/*2Method.js'
-                    ]
+                    includes: ['methods/**/*2Method.js']
                 }
             ]
         }).then((resolved) => {
 
             expect(resolved).to.not.exist();
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -70,15 +66,12 @@ describe('method loading', () => {
             relativeTo: __dirname,
             methods: [
                 {
-                    includes: [
-                        'does/not/*exist.js'
-                    ]
+                    includes: ['does/not/*exist.js']
                 }
             ]
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -100,7 +93,6 @@ describe('method loading', () => {
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -127,19 +119,16 @@ describe('method loading', () => {
             hapiServer.methods.sample1Method.divide(4, 2).then((res) => {
 
                 expect(res, 'divide').to.equal(2);
-
             });
 
             hapiServer.methods.sample1Method.increment().then((res) => {
 
                 expect(res, 'increment').to.equal(1);
-
             });
 
             hapiServer.methods.sample1Method.decrement().then((res) => {
 
                 expect(res, 'decrement').to.equal(-1);
-
             });
 
             setTimeout(() => {
@@ -147,21 +136,18 @@ describe('method loading', () => {
                 hapiServer.methods.sample1Method.increment().then((res) => {
 
                     expect(res, 'increment').to.equal(1);
-
                 }).then(() => {
 
                     return hapiServer.methods.sample1Method.decrement();
                 }).then((res) => {
 
                     expect(res, 'decrement').to.equal(-1);
-
                 });
             }, 1000);
 
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -230,13 +216,11 @@ describe('method loading', () => {
             hapiServer.methods.sample1Method.divide(4, 2).then((res) => {
 
                 expect(res, 'divide').to.equal(2);
-
             });
 
             hapiServer.methods.sample1Method.increment().then((res) => {
 
                 expect(res, 'increment').to.equal(1);
-
             });
 
             setTimeout(() => {
@@ -244,14 +228,12 @@ describe('method loading', () => {
                 hapiServer.methods.sample1Method.increment().then((res) => {
 
                     expect(res, 'decrement').to.equal(1);
-
                 });
             }, 1000);
 
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -298,11 +280,9 @@ describe('method loading', () => {
             expect(res.statusCode).to.be.equal(200);
             expect(parseInt(res.payload)).to.be.equal(hapiServer.methods.sample1Method.square(testValue));
             expect(parseInt(res.result)).to.be.equal(hapiServer.methods.sample1Method.square(testValue));
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -317,18 +297,16 @@ describe('method loading', () => {
             }]
         }).then((resolved) => {
 
-            expect(resolved).to.not.exist();
-
             const testValueX = 5;
             const testValueY = 3;
 
+            expect(resolved).to.not.exist();
+
             expect(hapiServer.methods.sample2Method.add(testValueX, testValueY))
                 .to.be.equal(hapiServer.methods.sample3Method.useAdd(testValueX, testValueY));
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -365,11 +343,9 @@ describe('method loading', () => {
 
             expect(hapiServer.methods.sample2Method.add(testValueX, testValueY))
                 .to.be.equal(hapiServer.methods.sample3Method.useAdd(testValueX, testValueY));
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -398,11 +374,9 @@ describe('method loading', () => {
             expect(hapiServer.methods.sub.sample2Method.add(7, 8), 'add').to.equal(15);
             expect(hapiServer.methods.sub.sample2Method.multiply(2, 3), 'multiply').to.equal(6);
             expect(hapiServer.methods.sub.sample3Method.useAdd(1, 2), 'useAdd').to.equal(3);
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -424,18 +398,14 @@ describe('method loading', () => {
             ]
         }).then((resolved) => {
 
-            expect(resolved).to.not.exist();
-
             const testValueX = 5;
             const testValueY = 3;
+            expect(resolved).to.not.exist();
 
-            expect(hapiServer.methods.main.sample2Method.add(testValueX, testValueY))
-                .to.be.equal(hapiServer.methods.sub.sample4Method.useAdd(testValueX, testValueY));
-
+            expect(hapiServer.methods.main.sample2Method.add(testValueX, testValueY)).to.be.equal(hapiServer.methods.sub.sample4Method.useAdd(testValueX, testValueY));
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -452,11 +422,9 @@ describe('method loading', () => {
 
             expect(resolved).to.not.exist();
             expect(hapiServer.methods.sample5Method(5, 3), 'subtract').to.equal(2);
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -482,7 +450,6 @@ describe('method loading', () => {
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -535,7 +502,6 @@ describe('method loading', () => {
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -553,11 +519,9 @@ describe('method loading', () => {
 
             expect(resolved).to.not.exist();
             expect(hapiServer.methods.major.sample5Method(5, 3), 'subtract').to.equal(2);
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -582,11 +546,9 @@ describe('method loading', () => {
 
             expect(resolved).to.not.exist();
             expect(hapiServer.methods.major.sample5Method(5, 3), 'subtract').to.equal(2);
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -609,12 +571,10 @@ describe('method loading', () => {
                     addToSelf: 16,
                     counter: 3
                 });
-
             });
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -648,12 +608,10 @@ describe('method loading', () => {
             hapiServer.methods.minor.sample6MethodX(8).then((res) => {
 
                 expect(res).to.equal(16);
-
             });
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -677,7 +635,6 @@ describe('method loading', () => {
         }).then(() => {
 
             return hapiServer.initialize();
-
         }).then((resolved) => {
 
             expect(resolved).to.not.exist();
@@ -685,7 +642,6 @@ describe('method loading', () => {
             hapiServer.methods.sample7Method().then((res) => {
 
                 expect(res).to.equal(-1);
-
             });
 
             setTimeout(() => {
@@ -694,12 +650,10 @@ describe('method loading', () => {
 
                     expect(res).to.equal(-1);
                 });
-
             }, 1000);
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -747,7 +701,6 @@ describe('method loading', () => {
             hapiServer.methods.cached.sample7Method().then((res) => {
 
                 expect(res).to.equal(-1);
-
             });
 
             expect(hapiServer.methods.noncached.sample7Method()).to.equal(-1);
@@ -757,21 +710,18 @@ describe('method loading', () => {
                 hapiServer.methods.cached.sample7Method().then((res) => {
 
                     expect(res).to.equal(-1);
-
                 }).then(() => {
 
                     return hapiServer.methods.noncached.sample7Method();
                 }).then((res) => {
 
                     expect(res).to.equal(-2);
-
                 });
 
             }, 1000);
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -804,11 +754,9 @@ describe('method loading', () => {
             expect(res).to.not.exist();
             expect(hapiServer.methods.nobind.sample8Method(5)).to.equal(5);
             expect(hapiServer.methods.withbind.sample8Method(5)).to.equal('5test');
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -822,7 +770,7 @@ describe('method loading', () => {
                 {
                     prefix: 'nobind',
                     includes: [
-                        function sample8Method(x) {
+                        (x) => {
 
                             let operation = (a) => {
 
@@ -874,7 +822,6 @@ describe('method loading', () => {
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -918,19 +865,16 @@ describe('method loading', () => {
                     addToSelf: 2,
                     counter: 5
                 });
-
             });
 
             hapiServer.methods.sample9Method.increment().then((res) => {
 
                 expect(res).to.equal(2);
-
             });
 
             hapiServer.methods.sample9Method.decrement().then((res) => {
 
                 expect(res).to.equal(-2);
-
             });
 
 
@@ -940,28 +884,23 @@ describe('method loading', () => {
                     addToSelf: 2,
                     counter: 5
                 });
-
             }).then(() => {
 
                 return hapiServer.methods.sample9Method.increment();
             }).then((res) => {
 
                 expect(res).to.equal(2);
-
             }).then(() => {
 
                 return hapiServer.methods.sample9Method.decrement();
-
             }).then((res) => {
 
                 expect(res).to.equal(-2);
-
             });
 
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -995,7 +934,6 @@ describe('method loading', () => {
                     addToSelf: 6,
                     counter: 4
                 });
-
             });
 
             setTimeout(() => {
@@ -1007,13 +945,11 @@ describe('method loading', () => {
                         counter: 4
                     });
                 });
-
             }, 1000);
 
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -1048,21 +984,17 @@ describe('method loading', () => {
         }).then((res) => {
 
             expect(res).to.not.exist();
-
             expect(hapiServer.methods.sample1Method.decrement()).to.equal(1);
-
             expect(hapiServer.methods.sample1Method.divide(4, 2)).to.equal(8);
 
             setTimeout(() => {
 
                 expect(hapiServer.methods.sample1Method.decrement()).to.equal(2);
-
             }, 1000);
 
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -1089,31 +1021,26 @@ describe('method loading', () => {
         }).then((res) => {
 
             expect(res).to.not.exist();
-
             hapiServer.methods.sample2Method.fibonacci().then((firstValue) => {
 
                 expect(firstValue).to.equal(2);
-
             }).then(() => {
 
                 return hapiServer.methods.sample2Method.fibonacci();
             }).then((secondValue) => {
 
                 expect(secondValue).to.equal(2);
-
             }).then(() => {
 
                 return hapiServer.methods.sample2Method.fibonacci();
             }).then((thirdValue) => {
 
                 expect(thirdValue).to.equal(2);
-
             });
 
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -1163,33 +1090,28 @@ describe('method loading', () => {
             hapiServer.methods.sample1Method.decrement().then((res) => {
 
                 expect(res).to.equal(-3);
-
             });
 
             hapiServer.methods.sample2Method.fibonacci().then((firstValue) => {
 
                 expect(firstValue).to.equal(4);
-
             }).then(() => {
 
                 return hapiServer.methods.sample2Method.fibonacci();
             }).then((secondValue) => {
 
                 expect(secondValue).to.equal(4);
-
             }).then(() => {
 
                 return hapiServer.methods.sample2Method.fibonacci();
             }).then((thirdValue) => {
 
                 expect(thirdValue).to.equal(4);
-
             });
 
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 

@@ -29,10 +29,12 @@ describe('routes loading', () => {
 
     const registerHapi = async (hapiServer, options) => {
 
-        return await hapiServer.register([{
-            plugin: Plugin,
-            options: options
-        }]);
+        return await hapiServer.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
     };
 
     it('registers routes with inject object', () => {
@@ -58,11 +60,9 @@ describe('routes loading', () => {
 
             expect(resolved).to.not.exist();
             expect(server.table()).to.have.length(2);
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -79,7 +79,6 @@ describe('routes loading', () => {
 
             expect(err).to.exist();
             expect(err).to.equal('Unable to retrieve files from pattern: does/not/*exist.js');
-
         });
     });
 
@@ -106,11 +105,9 @@ describe('routes loading', () => {
 
             expect(res).to.exist();
             expect(res.statusCode).to.be.equal(200);
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 
@@ -149,11 +146,9 @@ describe('routes loading', () => {
 
             expect(res).to.exist();
             expect(res.statusCode).to.be.equal(200);
-
         }).catch((err) => {
 
             expect(err).to.exist();
-
         });
     });
 });
