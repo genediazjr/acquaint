@@ -1,199 +1,366 @@
 'use strict';
 
-const Hapi = require('hapi');
+let Hapi = require('hapi');
+let Plugin = require('../');
 const Code = require('code');
 const Lab = require('lab');
-const Plugin = require('../');
+const Path = require('path');
 
 const expect = Code.expect;
 const lab = exports.lab = Lab.script();
-const beforeEach = lab.beforeEach;
 const describe = lab.describe;
 const it = lab.it;
 
 describe('app loading', () => {
 
-    let server;
+    const createHapiServerInstance = () => {
 
-    beforeEach((done) => {
+        Hapi = require('hapi');
+        Plugin = require('../');
 
-        server = new Hapi.Server();
-        server.connection();
-
-        return done();
-    });
-
-    const register = (options, next) => {
-
-        server.register({
-            register: Plugin,
-            options: options
-        }, (err) => {
-
-            return next(err);
+        return new Hapi.Server({
+            routes: {
+                files: {
+                    relativeTo: `${Path.join(__dirname)}`
+                }
+            }
         });
     };
 
-    it('exposes apps through the plugin', (done) => {
+    const registerHapi = async (hapiServer, options) => {
 
-        register({
-            apps: [{ includes: [{ foo: 'bar' }] }]
-        }, (err) => {
+        return await hapiServer.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
+    };
 
-            expect(err).to.not.exist();
+    it('exposes apps through the plugin', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
+            apps: [{includes: [{ foo: 'bar' }] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
             expect(Plugin.apps).to.equal({ foo: 'bar' });
-
-            return done();
-        });
-    });
-
-    it('registers apps with inject object', (done) => {
-
-        register({
-            apps: [{ includes: ['test/apps/**/*App.js'] }]
-        }, (err) => {
+        }).catch((err) => {
 
             expect(err).to.not.exist();
-
-            return done();
         });
     });
 
-    it('has error on no apps found', (done) => {
+    it('has error on no apps found on existing folder', () => {
 
-        register({
-            apps: [{ includes: ['does/not/*exist.js'] }]
-        }, (err) => {
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
+            apps: [{ includes: ['apps/*NotExistApp.js'] }]
+        }).catch((err) => {
 
             expect(err).to.exist();
-
-            return done();
         });
     });
 
-    it('has error on no name found', (done) => {
+    it('registers apps with inject object', () => {
 
-        register({
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
+            apps: [{ includes: ['apps/*App.js'] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+        }).catch((err) => {
+
+            expect(err).to.exist();
+        });
+    });
+
+    it('registers apps with inject object', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
+            apps: [{ includes: ['apps/*Test.js'] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+        }).catch((err) => {
+
+            expect(err).to.exist();
+        });
+    });
+
+    it('has error on no apps found', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
+            apps: [{ includes: ['does/not/*exist.js'] }]
+        }).catch((err) => {
+
+            expect(err).to.exist();
+        });
+    });
+
+    it('has error on no name found', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
             apps: [{
                 includes: [() => {
 
                     return 'foobar';
                 }]
             }]
-        }, (err) => {
+        }).catch((err) => {
 
             expect(err).to.exist();
-            expect(err).to.match(/Unable to identify the app name. Please refer to app loading api./i);
-
-            return done();
+            expect(err).to.equal('Unable to identify the app name. Please refer to app loading api.');
         });
     });
+    it('has error on no name found, has apps usable on external handlers with new server.decorate', () => {
 
-    it('has usable autoloaded apps', (done) => {
+        const server = createHapiServerInstance();
 
-        register({
-            apps: [{ includes: ['test/apps/**/*App.js'] }]
-        }, (err) => {
+        registerHapi(server, {
+            relativeTo: __dirname,
+            apps: [{ includes: [
+                function () {
 
-            expect(err).to.not.exist();
-            expect(server.app.foo).to.equal('bar');
-            expect(server.app.bar()).to.equal('foo');
+                    return 'bar';
+                },
+                function add(x, y) {
 
-            return done();
-        });
-    });
+                    return x + y;
+                },
+                function multiply(x, y) {
 
-    it('has usable direct inject apps', (done) => {
+                    return x * y;
+                }] }]
+        }).then((resolved) => {
 
-        register({
-            apps: [{ includes: [{ foo: 'bar' }] }]
-        }, (err) => {
+            expect(resolved).to.not.exist();
 
-            expect(err).to.not.exist();
-            expect(server.app.foo).to.equal('bar');
+            server.decorate('handler', 'someHandler', () => {
 
-            return done();
-        });
-    });
+                return (request) => {
+                    // (request, h) is the original function but since h is not in use in current  func, we will remove h
 
-    it('has apps usable on handlers', (done) => {
-
-        register({
-            apps: [{ includes: [{ foo: 'bar' }] }]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            server.route({
-                method: 'get',
-                path: '/',
-                handler: function (request, reply) {
-
-                    return reply(request.server.app.foo);
-                }
-            });
-
-            server.inject({
-                method: 'get',
-                url: '/'
-            }, (res) => {
-
-                expect(res.result).to.equal('bar');
-
-                return done();
-            });
-        });
-    });
-
-    it('has apps usable on external handlers', (done) => {
-
-        register({
-            apps: [{ includes: [{ foo: 'bar' }] }]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            server.handler('someHandler', () => {
-
-                return function (request, reply) {
-
-                    return reply(request.server.app.foo);
+                    return request.server.app.foo();
                 };
             });
 
-            server.route({
+            return server.route({
                 method: 'get',
                 path: '/',
-                handler: { someHandler: {} }
+                options: {
+                    handler: {someHandler: {}}
+                }
             });
+        }).then(() => {
 
-            server.inject({
+            const options = {
                 method: 'get',
                 url: '/'
-            }, (res) => {
+            };
 
-                expect(res.result).to.equal('bar');
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
+            expect(res.result).to.equal('bar');
+        }).catch((err) => {
+
+            expect(err).to.equal('Unable to identify the app name. Please refer to app loading api.');
         });
     });
 
-    it('uses name of function', (done) => {
+    it('has usable direct inject apps', () => {
 
-        register({
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
+            apps: [{ includes: [{ foo: 'bar' }] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+            expect(server.app.foo).to.equal('bar');
+        });
+    });
+
+    it('has apps usable on handlers', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
+            apps: [{ includes: [{ foo: 'bar' }] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+
+            return server.route({
+                method: 'get',
+                path: '/',
+                options: {
+                    handler: function (request) {
+                        // (request, h) is the original function but since h is not in use in current  func, we will remove h
+                        return request.server.app.foo;
+                    }
+                }
+            });
+        }).then(() => {
+
+            const options = {
+                method: 'get',
+                url: '/'
+            };
+
+            return server.inject(options);
+        }).then((res) => {
+
+            expect(res.result).to.equal('bar');
+        });
+    });
+
+    it('has apps usable on external handlers with deprecated server.handler', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
+            apps: [{ includes: [{ foo: 'bar' }] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+
+            server.handler('someHandler', () => {
+
+                return (request) => {
+                    // (request, h) is the original function but since h is not in use in current  func, we will remove h
+                    return request.server.app.foo;
+                };
+            });
+
+            return server.route({
+                method: 'get',
+                path: '/',
+                options: {
+                    handler: {someHandler: {}}
+                }
+            });
+        }).then(() => {
+
+            const options = {
+                method: 'get',
+                url: '/'
+            };
+
+            return server.inject(options);
+        }).then((res) => {
+
+            expect(res.result).to.equal('bar');
+        }).catch((error) => {
+
+            expect(error).to.exist();
+            expect(error.message).to.contains('server.handler is not a function');
+        });
+    });
+
+    it('has apps usable on external handlers with new server.decorate', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
+            apps: [{ includes: [{ foo: 'bar' }] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+
+            server.decorate('handler', 'someHandler', () => {
+
+                return (request) => {
+                    // (request, h) is the original function but since h is not in use in current  func, we will remove h
+                    return request.server.app.foo;
+                };
+            });
+
+            return server.route({
+                method: 'get',
+                path: '/',
+                options: {
+                    handler: { someHandler: {} }
+                }
+            });
+        }).then(() => {
+
+            const options = {
+                method: 'get',
+                url: '/'
+            };
+
+            return server.inject(options);
+        }).then((res) => {
+
+            expect(res.result).to.equal('bar');
+
+        });
+    });
+
+    it('uses name of function', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
             apps: [{
                 includes: [function foo() {
 
                     return 'bar';
                 }]
             }]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
             expect(server.app.foo()).to.equal('bar');
 
-            return done();
+        }).catch((err) => {
+
+            expect(err).to.not.exist();
+
+        });
+    });
+
+    it('has usable autoloaded apps', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
+            apps: [{ includes: ['apps/*App.js'] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+            expect(server.app.foo).to.equal('bar');
+            expect(server.app.bar()).to.equal('foo');
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 });

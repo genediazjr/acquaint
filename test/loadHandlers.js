@@ -1,65 +1,74 @@
 'use strict';
 
-const Hapi = require('hapi');
+let Hapi = require('hapi');
 const Code = require('code');
 const Lab = require('lab');
-const Plugin = require('../');
+let Plugin = require('../');
+const Path = require('path');
 
 const expect = Code.expect;
 const lab = exports.lab = Lab.script();
-const beforeEach = lab.beforeEach;
 const describe = lab.describe;
 const it = lab.it;
 
 describe('handler loading', () => {
 
-    let server;
+    const createHapiServerInstance = () => {
 
-    beforeEach((done) => {
+        Hapi = require('hapi');
+        Plugin = require('../');
 
-        server = new Hapi.Server();
-        server.connection();
-
-        return done();
-    });
-
-    const register = (options, next) => {
-
-        server.register({
-            register: Plugin,
-            options: options
-        }, (err) => {
-
-            return next(err);
+        return new Hapi.Server({
+            routes: {
+                files: {
+                    relativeTo: `${Path.join(__dirname)}`
+                }
+            }
         });
     };
 
-    it('registers handlers with inject object', (done) => {
+    const registerHapi = async (hapiServer, options) => {
 
-        register({
+        return await hapiServer.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
+    };
+
+    it('registers handlers with inject object', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
             handlers: [
                 {
                     includes: [
-                        'test/handlers/**/*1Handler.js'
+                        'handlers/**/*1Handler.js'
                     ]
                 },
                 {
                     includes: [
-                        'test/handlers/**/*2Handler.js'
+                        'handlers/**/*2Handler.js'
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
+        }).catch((err) => {
 
-            return done();
+            expect(err).to.exist();
         });
     });
 
-    it('has error on no handlers found', (done) => {
+    it('has error on no handlers found', () => {
 
-        register({
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
             handlers: [
                 {
                     includes: [
@@ -67,157 +76,138 @@ describe('handler loading', () => {
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+        }).catch((err) => {
 
             expect(err).to.exist();
-
-            return done();
         });
     });
 
-    it('has usable autoloaded handlers', (done) => {
+    it('has usable autoloaded handlers', () => {
 
-        register({
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
             handlers: [
                 {
-                    includes: [
-                        'test/handlers/**/*1Handler.js'
-                    ]
+                    includes: ['handlers/**/*1Handler.js']
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
 
-            server.route({
+            return server.route({
                 method: 'get',
                 path: '/test1',
-                handler: {
-                    sample1Handler: {}
+                options: {
+                    handler: { sample1Handler: {} }
                 }
             });
+        }).then((res) => {
 
-            server.inject({
+            expect(res).to.not.exist();
+
+            const options = {
                 method: 'get',
                 url: '/test1'
-            }, (res) => {
+            };
 
-                expect(res.statusCode).to.be.equal(200);
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
+            expect(res.statusCode).to.be.equal(200);
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('has usable autoloaded handlers using direct inject', (done) => {
+    it('has usable autoloaded handlers using direct inject', () => {
 
-        register({
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
             handlers: [
                 {
                     includes: [
                         function sample1Handler() {
 
-                            return function (request, reply) {
-
-                                return reply('hello');
+                            return function () {
+                                // (request, h) is the original function but since h is not in use in current  func, we will remove request and h
+                                return 'hello hapi :)';
                             };
                         }
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
 
-            server.route({
+            return server.route({
                 method: 'get',
-                path: '/test1',
-                handler: {
-                    sample1Handler: {}
+                path: '/test2',
+                options: {
+                    handler: { sample1Handler: {} }
                 }
             });
+        }).then((res) => {
 
-            server.inject({
+            expect(res).to.not.exist();
+
+            const options = {
                 method: 'get',
-                url: '/test1'
-            }, (res) => {
+                url: '/test2'
+            };
 
-                expect(res.statusCode).to.be.equal(200);
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
+            expect(res.statusCode).to.be.equal(200);
         });
     });
 
-    it('has usable handlers on routes', (done) => {
+    it('has usable handlers on routes', () => {
 
-        register({
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
             routes: [
                 {
                     includes: [
-                        'test/routes/**/*3Route.js'
+                        'routes/**/*3Route.js'
                     ]
                 }
             ],
             handlers: [
                 {
                     includes: [
-                        'test/handlers/**/*1Handler.js'
+                        'handlers/**/*1Handler.js'
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((res) => {
 
-            expect(err).to.not.exist();
+            expect(res).to.not.exist();
 
-            server.inject({
+            const options = {
                 method: 'get',
                 url: '/test3'
-            }, (res) => {
+            };
 
-                expect(res.statusCode).to.be.equal(200);
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
-        });
-    });
+            expect(res.statusCode).to.be.equal(200);
+        }).catch((err) => {
 
-    it('has usable handlers on routes using direct inject', (done) => {
-
-        register({
-            routes: [
-                {
-                    includes: [
-                        'test/routes/**/*3Route.js'
-                    ]
-                }
-            ],
-            handlers: [
-                {
-                    includes: [
-                        function sample1Handler() {
-
-                            return function (request, reply) {
-
-                                return reply('hello');
-                            };
-                        }
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            server.inject({
-                method: 'get',
-                url: '/test3'
-            }, (res) => {
-
-                expect(res.statusCode).to.be.equal(200);
-
-                return done();
-            });
+            expect(err).to.exist();
         });
     });
 });

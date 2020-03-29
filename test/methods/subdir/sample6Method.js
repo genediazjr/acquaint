@@ -3,6 +3,12 @@
 let counter = 1;
 
 
+/**
+ *
+ * @type {{options: {cache: {expiresIn: number, generateTimeout: number}}, method: function(*)}}
+ * since the option contain cache, it will automatically return promise, not directly the value it self.
+ * (that is according to observation of behavior
+ */
 module.exports = {
     options: {
         cache: {
@@ -10,11 +16,8 @@ module.exports = {
             generateTimeout: 60000
         }
     },
-    method: (a, next) => {
+    method: (a) => {
 
-        return next(null, {
-            addToSelf: a + a,
-            counter: ++counter
-        });
+        return { addToSelf: a + a, counter: ++counter };
     }
 };

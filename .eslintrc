@@ -1,6 +1,6 @@
 {
   "parserOptions": {
-    "ecmaVersion": 6
+    "ecmaVersion": 8
   },
   "env": {
     "node": true,
@@ -12,6 +12,7 @@
     "curly": 2,
     "indent": 2,
     "eqeqeq": 2,
+    "new-cap": 2,
     "eol-last": 2,
     "use-isnan": 2,
     "wrap-iife": 2,
@@ -168,14 +169,6 @@
     "quotes": [
       2,
       "single"
-    ],
-    "new-cap": [
-      2,
-      {
-        "capIsNewExceptions": [
-          "Glob"
-        ]
-      }
     ],
     "one-var": [
       2,

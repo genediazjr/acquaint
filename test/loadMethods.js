@@ -1,175 +1,163 @@
 'use strict';
 
-const Async = require('async');
-const Hapi = require('hapi');
+let Hapi = require('hapi');
+let Plugin = require('../');
 const Code = require('code');
 const Lab = require('lab');
-const Plugin = require('../');
+const Path = require('path');
 
 const expect = Code.expect;
 const lab = exports.lab = Lab.script();
-const beforeEach = lab.beforeEach;
 const describe = lab.describe;
 const it = lab.it;
 
 describe('method loading', () => {
 
-    let server;
-
-    beforeEach((done) => {
-
-        server = new Hapi.Server();
-        server.connection();
-
-        return done();
-    });
-
-    const register = (options, next) => {
-
-        server.register({
-            register: Plugin,
-            options: options
-        }, (err) => {
-
-            return next(err);
+    const createHapiServerInstance = () => {
+        Hapi = require('hapi');
+        Plugin = require('../');
+        return new Hapi.Server({
+            routes: {
+                files: {
+                    relativeTo: `${Path.join(__dirname)}`
+                }
+            }
         });
     };
 
-    it('registers methods with inject object', (done) => {
+    const registerHapi = async (hapiServer, options) => {
 
-        register({
+        return await hapiServer.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
+    };
+
+    it('registers methods with inject object', () => {
+
+        const hapiServer = createHapiServerInstance();
+
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
-                    includes: [
-                        'test/methods/**/*1Method.js'
-                    ]
+                    includes: ['methods/**/*1Method.js']
                 },
                 {
-                    includes: [
-                        'test/methods/**/*2Method.js'
-                    ]
+                    includes: ['methods/**/*2Method.js']
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
-
-            return done();
-        });
-    });
-
-    it('has error on no methods found', (done) => {
-
-        register({
-            methods: [
-                {
-                    includes: [
-                        'does/not/*exist.js'
-                    ]
-                }
-            ]
-        }, (err) => {
+            expect(resolved).to.not.exist();
+        }).catch((err) => {
 
             expect(err).to.exist();
-
-            return done();
         });
     });
 
-    it('will not load malformed methods', (done) => {
+    it('has error on no methods found', () => {
 
-        register({
+        const hapiServer = createHapiServerInstance();
+
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
-                    includes: [
-                        'test/methods/**/*1Method.js'
-                    ]
+                    includes: ['does/not/*exist.js']
                 }
             ]
-        }, (err) => {
+        }).catch((err) => {
 
-            expect(err).to.not.exist();
-
-            expect(server.methods.sample1Method.square).to.exist();
-            expect(server.methods.sample1Method.thisWillBeNotRegistered).to.not.exist();
-
-            return done();
+            expect(err).to.exist();
         });
     });
 
-    it('has usable autoloaded methods', (done) => {
+    it('will not load malformed methods', () => {
 
-        register({
-            methods: [
-                {
-                    includes: [
-                        'test/methods/**/*1Method.js'
-                    ]
-                }
-            ]
-        }, (err) => {
+        const hapiServer = createHapiServerInstance();
 
-            server.initialize();
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
+            methods: [{
+                includes: ['methods/**/*1Method.js']
+            }]
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
+            expect(hapiServer.methods.sample1Method.square).to.exist();
+            expect(hapiServer.methods.sample1Method.thisWillBeNotRegistered).to.not.exist();
 
-            expect(server.methods.sample1Method.square(5), 'square').to.equal(25);
-            expect(server.methods.sample1Method.isEven(4), 'isEven').to.equal(true);
-            expect(server.methods.sample1Method.isEven(3), 'isEven').to.equal(false);
+        }).catch((err) => {
 
-            server.methods.sample1Method.divide(4, 2, (err, data) => {
+            expect(err).to.exist();
+        });
+    });
 
-                expect(err).to.not.exist();
-                expect(data, 'divide').to.equal(2);
+
+    it('has usable autoloaded methods', () => {
+
+        const hapiServer = createHapiServerInstance();
+
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
+            methods: [{
+                includes: ['methods/**/*1Method.js']
+            }]
+        }).then(() => {
+
+            return hapiServer.initialize();
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+            expect(hapiServer.methods.sample1Method.square(5), 'square').to.equal(25);
+            expect(hapiServer.methods.sample1Method.isEven(4), 'isEven').to.equal(true);
+            expect(hapiServer.methods.sample1Method.isEven(3), 'isEven').to.equal(false);
+
+            hapiServer.methods.sample1Method.divide(4, 2).then((res) => {
+
+                expect(res, 'divide').to.equal(2);
             });
 
-            server.methods.sample1Method.increment((err, data) => {
+            hapiServer.methods.sample1Method.increment().then((res) => {
 
-                expect(err).to.not.exist();
-                expect(data, 'increment').to.equal(1);
+                expect(res, 'increment').to.equal(1);
             });
 
-            server.methods.sample1Method.decrement((err, data) => {
+            hapiServer.methods.sample1Method.decrement().then((res) => {
 
-                expect(err).to.not.exist();
-                expect(data, 'decrement').to.equal(-1);
+                expect(res, 'decrement').to.equal(-1);
             });
 
             setTimeout(() => {
 
-                Async.series([
-                    (doneTest) => {
+                hapiServer.methods.sample1Method.increment().then((res) => {
 
-                        server.methods.sample1Method.increment((err, data) => {
+                    expect(res, 'increment').to.equal(1);
+                }).then(() => {
 
-                            expect(err).to.not.exist();
-                            expect(data, 'increment').to.equal(1);
+                    return hapiServer.methods.sample1Method.decrement();
+                }).then((res) => {
 
-                            return doneTest();
-                        });
-                    },
-                    (doneTest) => {
-
-                        server.methods.sample1Method.decrement((err, data) => {
-
-                            expect(err).to.not.exist();
-                            expect(data, 'decrement').to.equal(-1);
-
-                            return doneTest();
-                        });
-                    }
-                ], () => {
-                    return done();
+                    expect(res, 'decrement').to.equal(-1);
                 });
             }, 1000);
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('has usable autoloaded methods using direct inject', (done) => {
+    it('has usable autoloaded methods using direct inject', () => {
 
+        const hapiServer = createHapiServerInstance();
         let counter = 0;
 
-        register({
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
                     prefix: 'sample1Method',
@@ -189,9 +177,9 @@ describe('method loading', () => {
                                     generateTimeout: 60000
                                 }
                             },
-                            method: function increment(next) {
+                            method: function increment() {
 
-                                return next(null, ++counter);
+                                return ++counter;
                             }
                         },
                         {
@@ -207,191 +195,127 @@ describe('method loading', () => {
                                     }
                                 }
                             },
-                            method: function divide(a, b, next) {
+                            method: function divide(a, b) {
 
-                                return next(null, this.divide(a, b));
+                                return this.divide(a, b);
                             }
                         }
                     ]
                 }
             ]
-        }, (err) => {
+        }).then(() => {
 
-            server.initialize();
+            return hapiServer.initialize();
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
+            expect(hapiServer.methods.sample1Method.square(5), 'square').to.equal(25);
+            expect(hapiServer.methods.sample1Method.isEven(4), 'isEven').to.equal(true);
+            expect(hapiServer.methods.sample1Method.isEven(3), 'isEven').to.equal(false);
 
-            expect(server.methods.sample1Method.square(5), 'square').to.equal(25);
-            expect(server.methods.sample1Method.isEven(4), 'isEven').to.equal(true);
-            expect(server.methods.sample1Method.isEven(3), 'isEven').to.equal(false);
+            hapiServer.methods.sample1Method.divide(4, 2).then((res) => {
 
-            server.methods.sample1Method.divide(4, 2, (err, data) => {
-
-                expect(err).to.not.exist();
-                expect(data, 'divide').to.equal(2);
+                expect(res, 'divide').to.equal(2);
             });
 
-            server.methods.sample1Method.increment((err, data) => {
+            hapiServer.methods.sample1Method.increment().then((res) => {
 
-                expect(err).to.not.exist();
-                expect(data, 'increment').to.equal(1);
+                expect(res, 'increment').to.equal(1);
             });
 
             setTimeout(() => {
 
-                server.methods.sample1Method.increment((err, data) => {
+                hapiServer.methods.sample1Method.increment().then((res) => {
 
-                    expect(err).to.not.exist();
-                    expect(data, 'increment').to.equal(1);
-
-                    return done();
+                    expect(res, 'decrement').to.equal(1);
                 });
             }, 1000);
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('has usable methods on handlers', (done) => {
+    it('has usable methods on handlers', () => {
+        const hapiServer = createHapiServerInstance();
+        const testValue = 5;
 
-        register({
-            handlers: [
-                {
-                    includes: [
-                        'test/handlers/**/*3Handler.js'
-                    ]
-                }
-            ],
-            methods: [
-                {
-                    includes: [
-                        'test/methods/**/*1Method.js'
-                    ]
-                }
-            ]
-        }, (err) => {
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
+            handlers: [{
+                includes: ['handlers/**/*3Handler.js']
+            }],
+            methods: [{
+                includes: ['methods/**/*1Method.js']
+            }]
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
 
-            const testValue = 5;
-
-            server.route({
+            return hapiServer.route({
                 method: 'get',
                 path: '/test4',
-                handler: {
-                    sample3Handler: {
-                        value: testValue
-                    }
-                }
-            });
-
-            server.inject({
-                method: 'get',
-                url: '/test4'
-            }, (res) => {
-
-                expect(res.statusCode).to.be.equal(200);
-                expect(parseInt(res.payload)).to.be.equal(server.methods.sample1Method.square(testValue));
-                expect(parseInt(res.result)).to.be.equal(server.methods.sample1Method.square(testValue));
-
-                return done();
-            });
-        });
-    });
-
-    it('has usable methods on handlers using direct inject', (done) => {
-
-        let counter = 0;
-
-        register({
-            handlers: [
-                {
-                    includes: [
-                        'test/handlers/**/*3Handler.js'
-                    ]
-                }
-            ],
-            methods: [
-                {
-                    prefix: 'sample1Method',
-                    includes: [
-                        function square(x) {
-
-                            return x * x;
-                        },
-                        function isEven(n) {
-
-                            return n % 2 === 0;
-                        },
-                        {
-                            options: {
-                                cache: {
-                                    expiresIn: 60000,
-                                    generateTimeout: 60000
-                                }
-                            },
-                            method: function increment(next) {
-
-                                return next(null, ++counter);
-                            }
+                options: {
+                    handler: {
+                        sample3Handler: {
+                            value: testValue
                         }
-                    ]
-                }
-            ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
-
-            const testValue = 5;
-
-            server.route({
-                method: 'get',
-                path: '/test4',
-                handler: {
-                    sample3Handler: {
-                        value: testValue
                     }
+
                 }
             });
+        }).then((res) => {
 
-            server.inject({
+            expect(res).to.not.exist();
+
+            const options = {
                 method: 'get',
                 url: '/test4'
-            }, (res) => {
+            };
 
-                expect(res.statusCode).to.be.equal(200);
-                expect(parseInt(res.payload)).to.be.equal(server.methods.sample1Method.square(testValue));
-                expect(parseInt(res.result)).to.be.equal(server.methods.sample1Method.square(testValue));
+            return hapiServer.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
+            expect(res.statusCode).to.be.equal(200);
+            expect(parseInt(res.payload)).to.be.equal(hapiServer.methods.sample1Method.square(testValue));
+            expect(parseInt(res.result)).to.be.equal(hapiServer.methods.sample1Method.square(testValue));
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('has usable methods on other methods', (done) => {
+    it('has usable methods on other methods', () => {
 
-        register({
-            methods: [
-                {
-                    includes: [
-                        'test/methods/subdir/*Method.js'
-                    ]
-                }
-            ]
-        }, (err) => {
+        const hapiServer = createHapiServerInstance();
 
-            expect(err).to.not.exist();
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
+            methods: [{
+                includes: ['methods/subdir/*Method.js']
+            }]
+        }).then((resolved) => {
 
             const testValueX = 5;
             const testValueY = 3;
 
-            expect(server.methods.sample2Method.add(testValueX, testValueY)).to.be.equal(server.methods.sample3Method.useAdd(testValueX, testValueY));
+            expect(resolved).to.not.exist();
 
-            return done();
+            expect(hapiServer.methods.sample2Method.add(testValueX, testValueY))
+                .to.be.equal(hapiServer.methods.sample3Method.useAdd(testValueX, testValueY));
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('has usable methods on other methods using direct inject', (done) => {
+    it('has usable methods on other methods using direct inject', () => {
 
-        register({
+        const hapiServer = createHapiServerInstance();
+
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
                     prefix: 'sample2Method',
@@ -407,150 +331,135 @@ describe('method loading', () => {
                     ]
                 },
                 {
-                    includes: [
-                        'test/methods/subdir/*3Method.js'
-                    ]
+                    includes: ['methods/subdir/*3Method.js']
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
 
             const testValueX = 5;
             const testValueY = 3;
 
-            expect(server.methods.sample2Method.add(testValueX, testValueY)).to.be.equal(server.methods.sample3Method.useAdd(testValueX, testValueY));
+            expect(hapiServer.methods.sample2Method.add(testValueX, testValueY))
+                .to.be.equal(hapiServer.methods.sample3Method.useAdd(testValueX, testValueY));
+        }).catch((err) => {
 
-            return done();
+            expect(err).to.exist();
         });
     });
 
-    it('has usable methods with prefix', (done) => {
+    it('has usable methods with prefix', () => {
 
-        register({
+        const hapiServer = createHapiServerInstance();
+
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
                     prefix: 'main',
-                    includes: [
-                        'test/methods/*Method.js'
-                    ]
+                    includes: ['methods/*Method.js']
                 },
                 {
                     prefix: 'sub',
-                    includes: [
-                        'test/methods/subdir/*Method.js'
-                    ]
+                    includes: ['methods/subdir/*Method.js']
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
+            expect(hapiServer.methods.main.sample1Method.square(5), 'square').to.equal(25);
+            expect(hapiServer.methods.main.sample1Method.isEven(4), 'isEven').to.equal(true);
+            expect(hapiServer.methods.main.sample1Method.isEven(3), 'isEven').to.equal(false);
+            expect(hapiServer.methods.sub.sample2Method.add(7, 8), 'add').to.equal(15);
+            expect(hapiServer.methods.sub.sample2Method.multiply(2, 3), 'multiply').to.equal(6);
+            expect(hapiServer.methods.sub.sample3Method.useAdd(1, 2), 'useAdd').to.equal(3);
+        }).catch((err) => {
 
-            expect(server.methods.main.sample1Method.square(5), 'square').to.equal(25);
-            expect(server.methods.main.sample1Method.isEven(4), 'isEven').to.equal(true);
-            expect(server.methods.main.sample1Method.isEven(3), 'isEven').to.equal(false);
-            expect(server.methods.sub.sample2Method.add(7, 8), 'add').to.equal(15);
-            expect(server.methods.sub.sample2Method.multiply(2, 3), 'multiply').to.equal(6);
-            expect(server.methods.sub.sample3Method.useAdd(1, 2), 'useAdd').to.equal(3);
-
-            return done();
+            expect(err).to.exist();
         });
     });
 
-    it('has usable methods on other methods with prefix', (done) => {
+    it('has usable methods on other methods with prefix', () => {
 
-        register({
+        const hapiServer = createHapiServerInstance();
+
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
                     prefix: 'main',
-                    includes: [
-                        'test/methods/subdir/*2Method.js'
-                    ]
+                    includes: ['methods/subdir/*2Method.js']
                 },
                 {
                     prefix: 'sub',
-                    includes: [
-                        'test/methods/subdir/*4Method.js'
-                    ]
+                    includes: ['methods/subdir/*4Method.js']
                 }
             ]
-        }, (err) => {
-
-            expect(err).to.not.exist();
+        }).then((resolved) => {
 
             const testValueX = 5;
             const testValueY = 3;
+            expect(resolved).to.not.exist();
 
-            expect(server.methods.main.sample2Method.add(testValueX, testValueY)).to.be.equal(server.methods.sub.sample4Method.useAdd(testValueX, testValueY));
+            expect(hapiServer.methods.main.sample2Method.add(testValueX, testValueY)).to.be.equal(hapiServer.methods.sub.sample4Method.useAdd(testValueX, testValueY));
+        }).catch((err) => {
 
-            return done();
+            expect(err).to.exist();
         });
     });
 
-    it('has usable function exporting methods', (done) => {
+    it('has usable function exporting methods', () => {
 
-        register({
-            methods: [
-                {
-                    includes: [
-                        'test/methods/subdir/*5Method.js'
-                    ]
-                }
-            ]
-        }, (err) => {
+        const hapiServer = createHapiServerInstance();
 
-            expect(err).to.not.exist();
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
+            methods: [{
+                includes: ['methods/subdir/*5Method.js']
+            }]
+        }).then((resolved) => {
 
-            expect(server.methods.sample5Method(5, 3), 'subtract').to.equal(2);
+            expect(resolved).to.not.exist();
+            expect(hapiServer.methods.sample5Method(5, 3), 'subtract').to.equal(2);
+        }).catch((err) => {
 
-            return done();
+            expect(err).to.exist();
         });
     });
 
-    it('has usable method and options exporting methods', (done) => {
+    it('has usable method and options exporting methods', () => {
 
-        register({
-            methods: [
-                {
-                    includes: [
-                        'test/methods/subdir/*6Method.js'
-                    ]
-                }
-            ]
-        }, (err) => {
+        const hapiServer = createHapiServerInstance();
 
-            expect(err).to.not.exist();
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
+            methods: [{
+                includes: ['methods/subdir/*6Method.js']
+            }]
+        }).then((resolved) => {
 
-            server.methods.sample6Method(9, (err, data) => {
+            expect(resolved).to.not.exist();
 
-                expect(err).to.not.exist();
-                expect(data).to.equal({
+            hapiServer.methods.sample6Method(9).then((res) => {
+                expect(res).to.equal({
                     addToSelf: 18,
                     counter: 2
                 });
             });
+        }).catch((err) => {
 
-            setTimeout(() => {
-
-                server.methods.sample6Method(11, (err, data) => {
-
-                    expect(err).to.not.exist();
-                    expect(data).to.equal({
-                        addToSelf: 22,
-                        counter: 3
-                    });
-
-                    return done();
-                });
-            }, 1000);
+            expect(err).to.exist();
         });
     });
 
-    it('has usable method and options exporting methods using direct inject', (done) => {
+    it('has usable method and options exporting methods using direct inject', () => {
 
+        const hapiServer = createHapiServerInstance();
         let counter = 1;
 
-        register({
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
                     includes: [
@@ -561,25 +470,20 @@ describe('method loading', () => {
                                     generateTimeout: 60000
                                 }
                             },
-                            method: function sample6Method(a, next) {
+                            method: function sample6Method(a) {
 
-                                return next(null, {
-                                    addToSelf: a + a,
-                                    counter: ++counter
-                                });
+                                return { addToSelf: a + a, counter: ++counter};
                             }
                         }
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
 
-            server.methods.sample6Method(9, (err, data) => {
-
-                expect(err).to.not.exist();
-                expect(data).to.equal({
+            hapiServer.methods.sample6Method(9).then((res) => {
+                expect(res).to.equal({
                     addToSelf: 18,
                     counter: 2
                 });
@@ -587,44 +491,46 @@ describe('method loading', () => {
 
             setTimeout(() => {
 
-                server.methods.sample6Method(11, (err, data) => {
-
-                    expect(err).to.not.exist();
-                    expect(data).to.equal({
+                hapiServer.methods.sample6Method(11).then((res) => {
+                    expect(res).to.equal({
                         addToSelf: 22,
                         counter: 3
                     });
-
-                    return done();
                 });
-            }, 1000);
+
+            }, 1);
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('has usable function exporting methods with prefix', (done) => {
+    it('has usable function exporting methods with prefix', () => {
 
-        register({
-            methods: [
-                {
-                    prefix: 'major',
-                    includes: [
-                        'test/methods/subdir/*5Method.js'
-                    ]
-                }
-            ]
-        }, (err) => {
+        const hapiServer = createHapiServerInstance();
 
-            expect(err).to.not.exist();
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
+            methods: [{
+                prefix: 'major',
+                includes: ['methods/subdir/*5Method.js']
+            }]
+        }).then((resolved) => {
 
-            expect(server.methods.major.sample5Method(5, 3), 'subtract').to.equal(2);
+            expect(resolved).to.not.exist();
+            expect(hapiServer.methods.major.sample5Method(5, 3), 'subtract').to.equal(2);
+        }).catch((err) => {
 
-            return done();
+            expect(err).to.exist();
         });
     });
 
-    it('has usable function exporting methods with prefix using direct inject', (done) => {
+    it('has usable function exporting methods with prefix using direct inject', () => {
 
-        register({
+        const hapiServer = createHapiServerInstance();
+
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
                     prefix: 'major',
@@ -636,47 +542,47 @@ describe('method loading', () => {
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
+            expect(hapiServer.methods.major.sample5Method(5, 3), 'subtract').to.equal(2);
+        }).catch((err) => {
 
-            expect(server.methods.major.sample5Method(5, 3), 'subtract').to.equal(2);
-
-            return done();
+            expect(err).to.exist();
         });
     });
 
-    it('has usable method and options exporting methods with prefix', (done) => {
+    it('has usable method and options exporting methods with prefix', () => {
 
-        register({
-            methods: [
-                {
-                    prefix: 'minor',
-                    includes: [
-                        'test/methods/subdir/*6Method.js'
-                    ]
-                }
-            ]
-        }, (err) => {
+        const hapiServer = createHapiServerInstance();
 
-            expect(err).to.not.exist();
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
+            methods: [{
+                prefix: 'minor',
+                includes: ['methods/subdir/*6Method.js']
+            }]
+        }).then((resolved) => {
 
-            server.methods.minor.sample6Method(8, (err, data) => {
+            expect(resolved).to.not.exist();
+            hapiServer.methods.minor.sample6Method(8).then((res) => {
 
-                expect(err).to.not.exist();
-                expect(data).to.equal({
+                expect(res).to.equal({
                     addToSelf: 16,
-                    counter: 4
+                    counter: 3
                 });
-
-                return done();
             });
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('has usable method and options exporting methods with prefix using direct inject', (done) => {
+    it('has usable method and options exporting methods with prefix using direct inject', () => {
+        const hapiServer = createHapiServerInstance();
 
-        register({
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
                     prefix: 'minor',
@@ -688,36 +594,36 @@ describe('method loading', () => {
                                     generateTimeout: 60000
                                 }
                             },
-                            method: function sample6MethodX(a, next) {
+                            method: function sample6MethodX(a) {
 
-                                return next(null, a + a);
+                                return a + a;
                             }
                         }
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
+            hapiServer.methods.minor.sample6MethodX(8).then((res) => {
 
-            server.methods.minor.sample6MethodX(8, (err, data) => {
-
-                expect(err).to.not.exist();
-                expect(data).to.equal(16);
-
-                return done();
+                expect(res).to.equal(16);
             });
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('uses default method options with cache on loaded methods', (done) => {
+    it('uses default method options with cache on loaded methods', () => {
 
-        register({
+        const hapiServer = createHapiServerInstance();
+
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
-                    includes: [
-                        'test/methods/subdir/*7Method.js'
-                    ],
+                    includes: ['methods/subdir/*7Method.js'],
                     options: {
                         cache: {
                             expiresIn: 60000,
@@ -726,44 +632,46 @@ describe('method loading', () => {
                     }
                 }
             ]
-        }, (err) => {
+        }).then(() => {
 
-            server.initialize();
+            return hapiServer.initialize();
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
 
-            server.methods.sample7Method((err, data) => {
+            hapiServer.methods.sample7Method().then((res) => {
 
-                expect(err).to.not.exist();
-                expect(data).to.equal(-1);
+                expect(res).to.equal(-1);
             });
 
             setTimeout(() => {
 
-                server.methods.sample7Method((err, data) => {
+                hapiServer.methods.sample7Method().then((res) => {
 
-                    expect(err).to.not.exist();
-                    expect(data).to.equal(-1);
-
-                    return done();
+                    expect(res).to.equal(-1);
                 });
             }, 1000);
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('uses default method options with cache on directly injected methods', (done) => {
+    it('uses default method options with cache on directly injected methods', () => {
 
+        const hapiServer = createHapiServerInstance();
         let cachedCounter = 0;
         let nonCachedCounter = 0;
 
-        register({
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
                     prefix: 'cached',
                     includes: [
-                        function sample7Method(next) {
+                        function sample7Method() {
 
-                            return next(null, --cachedCounter);
+                            return --cachedCounter;
                         }
                     ],
                     options: {
@@ -776,65 +684,61 @@ describe('method loading', () => {
                 {
                     prefix: 'noncached',
                     includes: [
-                        function sample7Method(next) {
+                        function sample7Method() {
 
-                            return next(null, --nonCachedCounter);
+                            return --nonCachedCounter;
                         }
                     ]
                 }
             ]
-        }, (err) => {
+        }).then(() => {
 
-            server.initialize();
+            return hapiServer.initialize();
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
 
-            server.methods.cached.sample7Method((err, data) => {
+            hapiServer.methods.cached.sample7Method().then((res) => {
 
-                expect(err).to.not.exist();
-                expect(data).to.equal(-1);
+                expect(res).to.equal(-1);
             });
 
-            server.methods.noncached.sample7Method((err, data) => {
-
-                expect(err).to.not.exist();
-                expect(data).to.equal(-1);
-            });
+            expect(hapiServer.methods.noncached.sample7Method()).to.equal(-1);
 
             setTimeout(() => {
 
-                server.methods.cached.sample7Method((cachedEecreErr, cachedData) => {
+                hapiServer.methods.cached.sample7Method().then((res) => {
 
-                    expect(cachedEecreErr).to.not.exist();
-                    expect(cachedData).to.equal(-1);
+                    expect(res).to.equal(-1);
+                }).then(() => {
 
-                    server.methods.noncached.sample7Method((nonCachedEecreErr, nonCachedData) => {
+                    return hapiServer.methods.noncached.sample7Method();
+                }).then((res) => {
 
-                        expect(nonCachedEecreErr).to.not.exist();
-                        expect(nonCachedData).to.equal(-2);
-
-                        return done();
-                    });
+                    expect(res).to.equal(-2);
                 });
+
             }, 1000);
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('uses default method options with bind on loaded methods', (done) => {
+    it('uses default method options with bind on loaded methods', () => {
 
-        register({
+        const hapiServer = createHapiServerInstance();
+
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
                     prefix: 'nobind',
-                    includes: [
-                        'test/methods/subdir/*8Method.js'
-                    ]
+                    includes: ['methods/subdir/*8Method.js']
                 },
                 {
                     prefix: 'withbind',
-                    includes: [
-                        'test/methods/subdir/*8Method.js'
-                    ],
+                    includes: ['methods/subdir/*8Method.js'],
                     options: {
                         bind: {
                             operation: function (a) {
@@ -845,25 +749,28 @@ describe('method loading', () => {
                     }
                 }
             ]
-        }, (err) => {
+        }).then((res) => {
 
-            expect(err).to.not.exist();
+            expect(res).to.not.exist();
+            expect(hapiServer.methods.nobind.sample8Method(5)).to.equal(5);
+            expect(hapiServer.methods.withbind.sample8Method(5)).to.equal('5test');
+        }).catch((err) => {
 
-            expect(server.methods.nobind.sample8Method(5)).to.equal(5);
-            expect(server.methods.withbind.sample8Method(5)).to.equal('5test');
-
-            return done();
+            expect(err).to.exist();
         });
     });
 
-    it('uses default method options with bind on directly injected methods', (done) => {
+    it('uses default method options with bind on directly injected methods', () => {
 
-        register({
+        const hapiServer = createHapiServerInstance();
+
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
                     prefix: 'nobind',
                     includes: [
-                        function sample8Method(x) {
+                        (x) => {
 
                             let operation = (a) => {
 
@@ -889,6 +796,7 @@ describe('method loading', () => {
                             };
 
                             if (this && typeof this.operation === 'function') {
+
                                 operation = this.operation;
                             }
 
@@ -905,25 +813,27 @@ describe('method loading', () => {
                     }
                 }
             ]
-        }, (err) => {
+        }).then((res) => {
 
-            expect(err).to.not.exist();
+            expect(res).to.not.exist();
+            expect(hapiServer.methods.nobind.sample8Method(5)).to.equal(5);
+            expect(hapiServer.methods.withbind.sample8Method(5)).to.equal('5test');
 
-            expect(server.methods.nobind.sample8Method(5)).to.equal(5);
-            expect(server.methods.withbind.sample8Method(5)).to.equal('5test');
+        }).catch((err) => {
 
-            return done();
+            expect(err).to.exist();
         });
     });
 
-    it('is able to use method with options within other methods', (done) => {
+    it('is able to use method with options within other methods', () => {
 
-        register({
+        const hapiServer = createHapiServerInstance();
+
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
-                    includes: [
-                        'test/methods/subdir/sample8Method.js'
-                    ],
+                    includes: ['methods/subdir/sample8Method.js'],
                     options: {
                         bind: {
                             operation: function (a) {
@@ -935,94 +845,74 @@ describe('method loading', () => {
                 },
                 {
                     includes: [
-                        'test/methods/sample1Method.js',
-                        'test/methods/subdir/sample6Method.js',
-                        'test/methods/subdir/sample9Method.js'
+                        'methods/sample1Method.js',
+                        'methods/subdir/sample6Method.js',
+                        'methods/subdir/sample9Method.js'
                     ]
                 }
             ]
-        }, (err) => {
+        }).then(() => {
 
-            server.initialize();
+            return hapiServer.initialize();
+        }).then((res) => {
 
-            expect(err).to.not.exist();
+            expect(res).to.not.exist();
+            expect(hapiServer.methods.sample9Method.sample8Method('thats')).to.equal('thatssomevalue');
 
-            expect(server.methods.sample9Method.sample8Method('thats')).to.equal('thatssomevalue');
+            hapiServer.methods.sample9Method.sample6Method(1).then((res) => {
 
-            server.methods.sample9Method.sample6Method(1, (err, data) => {
-
-                expect(err).to.not.exist();
-                expect(data).to.equal({
+                expect(res).to.equal({
                     addToSelf: 2,
                     counter: 5
                 });
             });
 
-            server.methods.sample9Method.increment((err, data) => {
+            hapiServer.methods.sample9Method.increment().then((res) => {
 
-                expect(err).to.not.exist();
-                expect(data).to.equal(2);
+                expect(res).to.equal(2);
             });
 
-            server.methods.sample9Method.decrement((err, data) => {
+            hapiServer.methods.sample9Method.decrement().then((res) => {
 
-                expect(err).to.not.exist();
-                expect(data).to.equal(-2);
+                expect(res).to.equal(-2);
             });
 
-            setTimeout(() => {
 
-                Async.series([
-                    (doneTest) => {
+            hapiServer.methods.sample9Method.sample6Method(1).then((res) => {
 
-                        server.methods.sample9Method.sample6Method(1, (err, data) => {
-
-                            expect(err).to.not.exist();
-                            expect(err).to.not.exist();
-                            expect(data).to.equal({
-                                addToSelf: 2,
-                                counter: 5
-                            });
-
-                            return doneTest();
-                        });
-                    },
-                    (doneTest) => {
-
-                        server.methods.sample9Method.increment((err, data) => {
-
-                            expect(err).to.not.exist();
-                            expect(data).to.equal(2);
-
-                            return doneTest();
-                        });
-                    },
-                    (doneTest) => {
-
-                        server.methods.sample9Method.decrement((err, data) => {
-
-                            expect(err).to.not.exist();
-                            expect(data).to.equal(-2);
-
-                            return doneTest();
-                        });
-                    }
-                ], () => {
-
-                    return done();
+                expect(res).to.equal({
+                    addToSelf: 2,
+                    counter: 5
                 });
-            }, 1000);
+            }).then(() => {
+
+                return hapiServer.methods.sample9Method.increment();
+            }).then((res) => {
+
+                expect(res).to.equal(2);
+            }).then(() => {
+
+                return hapiServer.methods.sample9Method.decrement();
+            }).then((res) => {
+
+                expect(res).to.equal(-2);
+            });
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('uses the method options if both config and method option exist', (done) => {
+    it('uses the method options if both config and method option exist', () => {
 
-        register({
+        const hapiServer = createHapiServerInstance();
+
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
-                    includes: [
-                        'test/methods/subdir/sample6Method.js'
-                    ],
+                    includes: ['methods/subdir/sample6Method.js'],
                     options: {
                         cache: {
                             expiresIn: 100,
@@ -1031,54 +921,53 @@ describe('method loading', () => {
                     }
                 }
             ]
+        }).then(() => {
 
-        }, (err) => {
+            return hapiServer.initialize();
+        }).then((res) => {
 
-            server.initialize();
+            expect(res).to.not.exist();
 
-            expect(err).to.not.exist();
+            hapiServer.methods.sample6Method(3).then((res) => {
 
-            server.methods.sample6Method(3, (err, data) => {
-
-                expect(err).to.not.exist();
-                expect(data).to.equal({
+                expect(res).to.equal({
                     addToSelf: 6,
-                    counter: 6
+                    counter: 4
                 });
             });
 
             setTimeout(() => {
 
-                server.methods.sample6Method(3, (err, data) => {
+                hapiServer.methods.sample6Method(3).then((res) => {
 
-                    expect(err).to.not.exist();
-                    expect(data).to.equal({
+                    expect(res).to.equal({
                         addToSelf: 6,
-                        counter: 6
+                        counter: 4
                     });
-
-                    return done();
                 });
-
             }, 1000);
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('overrides loaded options from methods', (done) => {
+    it('overrides loaded options from methods', () => {
 
+        const hapiServer = createHapiServerInstance();
         let counter = 0;
 
-        register({
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
-                    includes: [
-                        'test/methods/sample1Method.js'
-                    ],
+                    includes: ['methods/sample1Method.js'],
                     options: {
                         bind: {
-                            decrement: (next) => {
+                            decrement: () => {
 
-                                return next(null, ++counter);
+                                return ++counter;
                             },
                             divide: (a, b) => {
 
@@ -1089,45 +978,34 @@ describe('method loading', () => {
                     }
                 }
             ]
-        }, (err) => {
+        }).then(() => {
 
-            server.initialize();
+            return hapiServer.initialize();
+        }).then((res) => {
 
-            expect(err).to.not.exist();
-
-            server.methods.sample1Method.decrement((err, data1) => {
-
-                expect(err).to.not.exist();
-                expect(data1).to.equal(1);
-            });
-
-            server.methods.sample1Method.divide(4, 2, (err, data2) => {
-
-                expect(err).to.not.exist();
-                expect(data2).to.equal(8);
-            });
+            expect(res).to.not.exist();
+            expect(hapiServer.methods.sample1Method.decrement()).to.equal(1);
+            expect(hapiServer.methods.sample1Method.divide(4, 2)).to.equal(8);
 
             setTimeout(() => {
 
-                server.methods.sample1Method.decrement((err, data1) => {
-
-                    expect(err).to.not.exist();
-                    expect(data1).to.equal(2);
-
-                    return done();
-                });
+                expect(hapiServer.methods.sample1Method.decrement()).to.equal(2);
             }, 1000);
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('merges loaded options from methods', (done) => {
+    it('merges loaded options from methods', () => {
+        const hapiServer = createHapiServerInstance();
 
-        register({
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
-                    includes: [
-                        'test/methods/subdir/sample2Method.js'
-                    ],
+                    includes: ['methods/subdir/sample2Method.js'],
                     options: {
                         cache: {
                             expiresIn: 60000,
@@ -1137,42 +1015,44 @@ describe('method loading', () => {
                     }
                 }
             ]
-        }, (err) => {
+        }).then(() => {
 
-            server.initialize();
+            return hapiServer.initialize();
+        }).then((res) => {
 
-            expect(err).to.not.exist();
+            expect(res).to.not.exist();
+            hapiServer.methods.sample2Method.fibonacci().then((firstValue) => {
 
-            server.methods.sample2Method.fibonacci((err, firstValue) => {
-
-                expect(err).to.not.exist();
                 expect(firstValue).to.equal(2);
+            }).then(() => {
 
-                server.methods.sample2Method.fibonacci((err, secondValue) => {
+                return hapiServer.methods.sample2Method.fibonacci();
+            }).then((secondValue) => {
 
-                    expect(err).to.not.exist();
-                    expect(secondValue).to.equal(2);
+                expect(secondValue).to.equal(2);
+            }).then(() => {
 
-                    server.methods.sample2Method.fibonacci((err, thirdValue) => {
+                return hapiServer.methods.sample2Method.fibonacci();
+            }).then((thirdValue) => {
 
-                        expect(err).to.not.exist();
-                        expect(thirdValue).to.equal(2);
-
-                        return done();
-                    });
-                });
+                expect(thirdValue).to.equal(2);
             });
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('overrides and merges loaded options from methods', (done) => {
+    it('overrides and merges loaded options from methods', () => {
 
-        register({
+        const hapiServer = createHapiServerInstance();
+
+        registerHapi(hapiServer, {
+            relativeTo: __dirname,
             methods: [
                 {
-                    includes: [
-                        'test/methods/subdir/sample2Method.js'
-                    ],
+                    includes: ['methods/subdir/sample2Method.js'],
                     options: {
                         cache: {
                             expiresIn: 60000,
@@ -1189,9 +1069,7 @@ describe('method loading', () => {
                     }
                 },
                 {
-                    includes: [
-                        'test/methods/sample1Method.js'
-                    ],
+                    includes: ['methods/sample1Method.js'],
                     options: {
                         cache: {
                             expiresIn: 100,
@@ -1202,46 +1080,39 @@ describe('method loading', () => {
                     }
                 }
             ]
-        }, (err) => {
+        }).then(() => {
 
-            server.initialize();
+            return hapiServer.initialize();
+        }).then((res) => {
 
-            expect(err).to.not.exist();
+            expect(res).to.not.exist();
 
-            server.methods.sample1Method.decrement((err, data) => {
+            hapiServer.methods.sample1Method.decrement().then((res) => {
 
-                expect(err).to.not.exist();
-                expect(data).to.equal(-3);
+                expect(res).to.equal(-3);
             });
 
-            server.methods.sample2Method.fibonacci((err, firstValue) => {
+            hapiServer.methods.sample2Method.fibonacci().then((firstValue) => {
 
-                expect(err).to.not.exist();
                 expect(firstValue).to.equal(4);
+            }).then(() => {
 
-                server.methods.sample2Method.fibonacci((err, secondValue) => {
+                return hapiServer.methods.sample2Method.fibonacci();
+            }).then((secondValue) => {
 
-                    expect(err).to.not.exist();
-                    expect(secondValue).to.equal(4);
+                expect(secondValue).to.equal(4);
+            }).then(() => {
 
-                    server.methods.sample2Method.fibonacci((err, thirdValue) => {
+                return hapiServer.methods.sample2Method.fibonacci();
+            }).then((thirdValue) => {
 
-                        expect(err).to.not.exist();
-                        expect(thirdValue).to.equal(4);
-                    });
-                });
+                expect(thirdValue).to.equal(4);
             });
 
-            setTimeout(() => {
+        }).catch((err) => {
 
-                server.methods.sample1Method.decrement((err, data) => {
-
-                    expect(err).to.not.exist();
-                    expect(data).to.equal(-4);
-
-                    return done();
-                });
-            }, 1000);
+            expect(err).to.exist();
         });
     });
+
 });

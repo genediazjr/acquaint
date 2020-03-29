@@ -1,129 +1,188 @@
 'use strict';
 
-const Hapi = require('hapi');
+let Hapi = require('hapi');
+let Plugin = require('../');
 const Code = require('code');
 const Lab = require('lab');
-const Plugin = require('../');
+const Path = require('path');
 
 const expect = Code.expect;
 const lab = exports.lab = Lab.script();
-const beforeEach = lab.beforeEach;
 const describe = lab.describe;
 const it = lab.it;
 
 describe('bind loading', () => {
 
-    let server;
+    const createHapiServerInstance = () => {
 
-    beforeEach((done) => {
+        Hapi = require('hapi');
+        Plugin = require('../');
 
-        server = new Hapi.Server();
-        server.connection();
-
-        return done();
-    });
-
-    const register = (options, next) => {
-
-        server.register({
-            register: Plugin,
-            options: options
-        }, (err) => {
-
-            return next(err);
+        return new Hapi.Server({
+            routes: {
+                files: {
+                    relativeTo: `${Path.join(__dirname)}`
+                }
+            }
         });
     };
 
-    it('exposes binds through the plugin', (done) => {
+    const registerHapi = async (hapiServer, options) => {
 
-        register({
-            binds: [{ includes: [{ test: 'value' }] }]
-        }, (err) => {
+        return await hapiServer.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
+    };
 
-            expect(err).to.not.exist();
-            expect(Plugin.binds).to.equal({ test: 'value' });
+    it('exposes binds through the plugin', () => {
 
-            return done();
-        });
-    });
+        const server = createHapiServerInstance();
 
-    it('registers binds with inject object', (done) => {
+        registerHapi(server, {
+            relativeTo: __dirname,
+            binds: [{ includes: [{ test: 'value1' }] }]
+        }).then((resolved) => {
 
-        register({
-            binds: [{ includes: ['test/methods/**/*5Method.js'] }]
-        }, (err) => {
+            expect(resolved).to.not.exist();
+            expect(Plugin.binds).to.equal({ test: 'value1' });
 
-            expect(err).to.not.exist();
-
-            return done();
-        });
-    });
-
-    it('has error on no binds found', (done) => {
-
-        register({
-            binds: [{ includes: ['does/not/*exist.js'] }]
-        }, (err) => {
+        }).catch((err) => {
 
             expect(err).to.exist();
 
-            return done();
         });
     });
 
-    it('has error on no name found', (done) => {
+    it('exposes binds through the plugin', () => {
 
-        register({
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
+            binds: [{ includes: [{ test: 'value1' }] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+            expect(Plugin.binds).to.equal({ test: 'value1' });
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
+        });
+    });
+
+    it('registers binds with inject object', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
+            binds: [{ includes: ['methods/**/*5Method.js'] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
+        });
+    });
+
+    it('has error on no binds found', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
+            binds: [{ includes: ['does/not/*exist.js'] }]
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
+        });
+    });
+
+    it('has error on no name found', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
             binds: [{
                 includes: [() => {
 
                     return 'foobar';
                 }]
             }]
-        }, (err) => {
+        }).then((resolved) => {
+
+            expect(resolved).to.not.exist();
+
+        }).catch((err) => {
 
             expect(err).to.exist();
             expect(err).to.match(/Unable to identify the bind name. Please refer to bind loading api./i);
 
-            return done();
         });
     });
 
-    it('has usable autoloaded binds with included routes', (done) => {
+    it('has usable autoloaded binds with included routes', () => {
 
-        register({
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
             binds: [{ includes: [{ test: 'value' }] }],
             routes: [{
                 includes: [{
                     method: 'get',
                     path: '/',
-                    handler: function (request, reply) {
+                    options: {
+                        handler: (request, h) => {
 
-                        return reply(this.test);
+                            return h.realm.settings.bind.test;
+                        }
                     }
                 }]
             }]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
 
-            server.inject({
+            const options = {
                 method: 'get',
                 url: '/'
-            }, (res) => {
+            };
 
-                expect(res.result).to.equal('value');
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
+            expect(res.result).to.equal('value');
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 
-    it('uses name of function', (done) => {
+    it('uses name of function', () => {
 
-        register({
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
             binds: [{
-                includes: [function foo() {
+                includes: [function functionTest() {
 
                     return 'bar';
                 }]
@@ -132,25 +191,33 @@ describe('bind loading', () => {
                 includes: [{
                     method: 'get',
                     path: '/',
-                    handler: function (request, reply) {
+                    options: {
+                        handler: (request, h) => {
 
-                        return reply(this.foo());
+                            return h.realm.settings.bind.functionTest();
+                        }
                     }
                 }]
             }]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
 
-            server.inject({
+            const options = {
                 method: 'get',
                 url: '/'
-            }, (res) => {
+            };
 
-                expect(res.result).to.equal('bar');
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
+            expect(res.result).to.equal('bar');
+
+        }).catch((err) => {
+
+            expect(err).to.exist();
+
         });
     });
 });
+

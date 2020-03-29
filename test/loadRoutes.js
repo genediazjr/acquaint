@@ -1,138 +1,154 @@
 'use strict';
 
-const Hapi = require('hapi');
+let Hapi = require('hapi');
+let Plugin = require('../');
 const Code = require('code');
 const Lab = require('lab');
-const Plugin = require('../');
+const Path = require('path');
 
 const expect = Code.expect;
 const lab = exports.lab = Lab.script();
-const beforeEach = lab.beforeEach;
 const describe = lab.describe;
 const it = lab.it;
 
-describe('route loading', () => {
+describe('routes loading', () => {
 
-    let server;
+    const createHapiServerInstance = () => {
 
-    beforeEach((done) => {
+        Hapi = require('hapi');
+        Plugin = require('../');
 
-        server = new Hapi.Server();
-        server.connection();
-
-        return done();
-    });
-
-    const register = (options, next) => {
-
-        server.register({
-            register: Plugin,
-            options: options
-        }, (err) => {
-
-            return next(err);
+        return new Hapi.Server({
+            routes: {
+                files: {
+                    relativeTo: `${Path.join(__dirname)}`
+                }
+            }
         });
     };
 
-    it('registers routes with inject object', (done) => {
+    const registerHapi = async (hapiServer, options) => {
 
-        register({
+        return await hapiServer.register([
+            {
+                plugin: Plugin,
+                options: options
+            }
+        ]);
+    };
+
+    it('registers routes with inject object', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
             routes: [
                 {
-                    includes: [
-                        'test/routes/**/*1Route.js'
-                    ]
+                    includes: ['routes/**/*1Route.js']
                 },
                 {
-                    includes: [
-                        'test/routes/**/*2Route.js'
-                    ]
+                    includes: ['routes/**/*2Route.js']
                 }
             ]
-        }, (err) => {
+        }).then((resolved) => {
 
-            expect(err).to.not.exist();
+            expect(resolved).to.not.exist();
 
-            expect(server.connections[0].table()).to.have.length(2);
+            return server.initialize();
+        }).then((resolved) => {
 
-            return done();
-        });
-    });
-
-    it('has error on no routes found', (done) => {
-
-        register({
-            routes: [
-                {
-                    includes: [
-                        'does/not/*exist.js'
-                    ]
-                }
-            ]
-        }, (err) => {
+            expect(resolved).to.not.exist();
+            expect(server.table()).to.have.length(2);
+        }).catch((err) => {
 
             expect(err).to.exist();
-
-            return done();
         });
     });
 
-    it('has usable autoloaded routes', (done) => {
+    it('has error on no routes found', () => {
 
-        register({
-            routes: [
-                {
-                    includes: [
-                        'test/routes/**/*1Route.js'
-                    ]
-                }
-            ]
-        }, (err) => {
+        const server = createHapiServerInstance();
 
-            expect(err).to.not.exist();
+        registerHapi(server, {
+            relativeTo: __dirname,
+            routes: [{
+                includes: ['does/not/*exist.js']
+            }]
+        }).catch((err) => {
 
-            server.inject({
+            expect(err).to.exist();
+            expect(err).to.equal('Unable to retrieve files from pattern: does/not/*exist.js');
+        });
+    });
+
+    it('has usable autoloaded routes', () => {
+
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
+            routes: [{
+                includes: ['routes/**/*1Route.js']
+            }]
+        }).then((res) => {
+
+            expect(res).not.to.exist();
+
+            const options = {
                 method: 'get',
                 url: '/test1'
-            }, (res) => {
+            };
 
-                expect(res.statusCode).to.be.equal(200);
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
+            expect(res).to.exist();
+            expect(res.statusCode).to.be.equal(200);
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 
-    it('has usable autoloaded routes using direct inject', (done) => {
+    it('has usable autoloaded routes using direct inject', () => {
 
-        register({
+        const server = createHapiServerInstance();
+
+        registerHapi(server, {
+            relativeTo: __dirname,
             routes: [
                 {
                     includes: [
                         {
                             path: '/test1',
                             method: 'GET',
-                            handler: function (request, reply) {
+                            handler: function () {
+                                // (request, h) is the original function but since h is not in use in current  func, we will remove request and  h
 
-                                return reply('hello');
+                                return 'hello';
                             }
                         }
                     ]
                 }
             ]
-        }, (err) => {
+        }).then((res) => {
 
-            expect(err).to.not.exist();
+            expect(res).not.to.exist();
 
-            server.inject({
+            const options = {
                 method: 'get',
                 url: '/test1'
-            }, (res) => {
+            };
 
-                expect(res.statusCode).to.be.equal(200);
+            return server.inject(options);
+        }).then((res) => {
 
-                return done();
-            });
+            expect(res).to.exist();
+            expect(res.statusCode).to.be.equal(200);
+        }).catch((err) => {
+
+            expect(err).to.exist();
         });
     });
 });
